@@ -1,13 +1,12 @@
 'use client';
 
 import { SavingsRateType } from '@prisma/client';
-import { Calculator, CalendarDays, Equal, Shuffle } from 'lucide-react';
+import { Calculator, CalendarDays, ChartColumn, Clock, Equal } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormNumberInput } from '@/components/form/form-number-input';
-import { FormSwitch } from '@/components/form/form-switch';
 import { Button } from '@/components/ui/button';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -22,6 +21,7 @@ export function SavingsFormFields() {
   const commonT = useTranslations('common');
   const locale = useLocale();
   const { watch, setValue, control } = useFormContext<LoanFormClientData>();
+  const [calculateAttempted, setCalculateAttempted] = useState(false);
 
   const isSavingsContract = watch('isSavingsContract');
   const savingsRateType = watch('savingsRateType');
@@ -35,6 +35,9 @@ export function SavingsFormFields() {
   const toggleValue = isFixedRate ? 'fixed' : 'varying';
   const lastPaymentDate = calculateSavingsLastPaymentDate(savingsFirstPaymentDate, savingsPaymentCount);
   const parser = new NumberParser('de-DE');
+  const loanAmount = parser.parse(amount as string);
+  const monthlyAmount = parser.parse(savingsMonthlyAmount as string);
+  const showCalculateError = calculateAttempted && (!loanAmount || !monthlyAmount || monthlyAmount <= 0);
 
   useEffect(() => {
     if (!isSavingsContract) return;
@@ -56,11 +59,12 @@ export function SavingsFormFields() {
   };
 
   const handleCalculatePaymentCount = () => {
-    const loanAmount = parser.parse(amount as string);
-    const monthlyAmount = parser.parse(savingsMonthlyAmount as string);
+    if (!loanAmount || !monthlyAmount || monthlyAmount <= 0) {
+      setCalculateAttempted(true);
+      return;
+    }
 
-    if (!loanAmount || !monthlyAmount || monthlyAmount <= 0) return;
-
+    setCalculateAttempted(false);
     setValue('savingsPaymentCount', Math.ceil(loanAmount / monthlyAmount), {
       shouldDirty: true,
       shouldValidate: true,
@@ -69,10 +73,8 @@ export function SavingsFormFields() {
 
   return (
     <>
-      <FormSwitch name="isSavingsContract" label={t('new.form.savingsContract')} labelPlacement="inline" />
-
       {isSavingsContract && (
-        <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 motion-reduce:animate-none space-y-5">
+        <div className="animate-in fade-in-0 slide-in-from-top-1 duration-400 motion-reduce:animate-none space-y-5">
           <div className="space-y-2">
             <Label className="block">{t('new.form.savingsRateType')}</Label>
             <ToggleGroup type="single" value={toggleValue} onValueChange={handleToggleChange} className="w-full">
@@ -84,7 +86,7 @@ export function SavingsFormFields() {
               </ToggleGroupItem>
               <ToggleGroupItem value="varying" aria-label={t('new.form.savingsRateTypeVarying')}>
                 <span className="inline-flex items-center justify-center gap-2">
-                  <Shuffle className="h-4 w-4" aria-hidden="true" />
+                  <ChartColumn className="h-4 w-4" aria-hidden="true" />
                   <span>{t('new.form.savingsRateTypeVarying')}</span>
                 </span>
               </ToggleGroupItem>
@@ -134,6 +136,9 @@ export function SavingsFormFields() {
                         <Calculator className="h-4 w-4" />
                       </Button>
                     </div>
+                    {showCalculateError && (
+                      <p className="text-sm text-destructive">{t('new.form.savingsCalculateCountError')}</p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -178,19 +183,22 @@ export function SavingsFormFields() {
           </div>
 
           {lastPaymentDate && savingsPaymentCount && (
-            <div className="space-y-1 pl-0.5">
-              <p className="flex items-center gap-2 text-sm">
-                <CalendarDays className="h-4 w-4" aria-hidden="true" />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-0.5 text-sm">
+              <p className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>
                   {t('new.form.savingsLastPayment', {
                     date: formatDateLong(lastPaymentDate, locale),
                   })}
                 </span>
               </p>
-              <p className="text-sm text-muted-foreground">
-                {t('new.form.savingsRuntime', {
-                  months: savingsPaymentCount,
-                })}
+              <p className="flex items-center gap-2">
+                <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>
+                  {t('new.form.savingsRuntime', {
+                    months: savingsPaymentCount,
+                  })}
+                </span>
               </p>
             </div>
           )}

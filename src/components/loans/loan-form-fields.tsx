@@ -11,9 +11,11 @@ import { FormNumberInput } from '@/components/form/form-number-input';
 import { FormSelect } from '@/components/form/form-select';
 import { InterestRateInput } from '@/components/loans/interest-rate-input';
 import { LenderCombobox } from '@/components/loans/lender-combobox';
+import { CardTitle } from '@/components/ui/card';
 import { FormSection } from '@/components/ui/form-section';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { FormAdditionalFields } from '../form/form-additional-fields';
+import { FormSwitch } from '../form/form-switch';
 import { useProject } from '../providers/project-provider';
 import { LoanInvestmentTypeSection } from './loan-investment-type-section';
 import { SavingsFormFields } from './savings-form-fields';
@@ -36,6 +38,7 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
   const lenderId = form.watch('lenderId');
   const signDate = form.watch('signDate');
   const interestRate = form.watch('interestRate');
+  const isSavingsContract = form.watch('isSavingsContract');
   const selectedLender = lenders.find((lender) => lender.id === lenderId);
   const deInvestmentActComplianceEnabled = project.configuration.deInvestmentActCompliance === true;
   const isInvestmentTypeSectionActive = selectedLender?.country === 'DE';
@@ -108,15 +111,26 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
         />
       </FormSection>
 
-      {/* Savings Contract Section */}
-      <FormSection icon={<PiggyBank className="w-4 h-4 text-muted-foreground" />} title={t('new.form.savingsInfo')}>
-        <SavingsFormFields />
-      </FormSection>
+      <div className="flex flex-col gap-8">
+        {/* Savings Contract Section */}
+        <FormSection
+          contentClassName={!isSavingsContract ? 'hidden' : undefined}
+          icon={<PiggyBank className="w-4 h-4 text-muted-foreground" />}
+          title={
+            <div className="flex items-center gap-6">
+              <CardTitle className="text-sm font-medium">{t('new.form.savingsInfo')}</CardTitle>
+              <FormSwitch name="isSavingsContract" className="shrink-0 space-y-0" />
+            </div>
+          }
+        >
+          {isSavingsContract ? <SavingsFormFields /> : null}
+        </FormSection>
 
-      {/* Termination Information Section */}
-      <FormSection icon={<FileX className="w-4 h-4 text-muted-foreground" />} title={t('new.form.terminationInfo')}>
-        <TerminationFormFields hideTerminationDate />
-      </FormSection>
+        {/* Termination Information Section */}
+        <FormSection icon={<FileX className="w-4 h-4 text-muted-foreground" />} title={t('new.form.terminationInfo')}>
+          <TerminationFormFields hideTerminationDate />
+        </FormSection>
+      </div>
 
       {/* Additional Information Section */}
       {((project.configuration.loanAdditionalFields.length ?? 0) > 0 ||
