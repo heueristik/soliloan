@@ -12,7 +12,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { calculateSavingsLastPaymentDate, getDefaultFirstPaymentDate } from '@/lib/loans/savings-contract';
+import { calculateSavingsLastDepositDate, getDefaultFirstDepositDate } from '@/lib/loans/savings-contract';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { formatDateLong, NumberParser } from '@/lib/utils';
 
@@ -25,15 +25,15 @@ export function SavingsFormFields() {
 
   const isSavingsContract = watch('isSavingsContract');
   const savingsRateType = watch('savingsRateType');
-  const savingsPaymentCount = watch('savingsPaymentCount');
-  const savingsFirstPaymentDate = watch('savingsFirstPaymentDate');
+  const savingsDepositCount = watch('savingsDepositCount');
+  const savingsFirstDepositDate = watch('savingsFirstDepositDate');
   const signDate = watch('signDate');
   const amount = watch('amount');
   const savingsMonthlyAmount = watch('savingsMonthlyAmount');
 
   const isFixedRate = savingsRateType === SavingsRateType.FIXED;
   const toggleValue = isFixedRate ? 'fixed' : 'varying';
-  const lastPaymentDate = calculateSavingsLastPaymentDate(savingsFirstPaymentDate, savingsPaymentCount);
+  const lastDepositDate = calculateSavingsLastDepositDate(savingsFirstDepositDate, savingsDepositCount);
   const parser = new NumberParser('de-DE');
   const loanAmount = parser.parse(amount as string);
   const monthlyAmount = parser.parse(savingsMonthlyAmount as string);
@@ -41,13 +41,13 @@ export function SavingsFormFields() {
 
   useEffect(() => {
     if (!isSavingsContract) return;
-    if (savingsFirstPaymentDate) return;
+    if (savingsFirstDepositDate) return;
 
-    setValue('savingsFirstPaymentDate', getDefaultFirstPaymentDate(signDate), {
+    setValue('savingsFirstDepositDate', getDefaultFirstDepositDate(signDate), {
       shouldDirty: true,
       shouldValidate: true,
     });
-  }, [isSavingsContract, savingsFirstPaymentDate, signDate, setValue]);
+  }, [isSavingsContract, savingsFirstDepositDate, signDate, setValue]);
 
   const handleToggleChange = (value: string) => {
     if (!value) return;
@@ -58,14 +58,14 @@ export function SavingsFormFields() {
     });
   };
 
-  const handleCalculatePaymentCount = () => {
+  const handleCalculateDepositCount = () => {
     if (!loanAmount || !monthlyAmount || monthlyAmount <= 0) {
       setCalculateAttempted(true);
       return;
     }
 
     setCalculateAttempted(false);
-    setValue('savingsPaymentCount', Math.ceil(loanAmount / monthlyAmount), {
+    setValue('savingsDepositCount', Math.ceil(loanAmount / monthlyAmount), {
       shouldDirty: true,
       shouldValidate: true,
     });
@@ -105,10 +105,10 @@ export function SavingsFormFields() {
               />
               <FormField
                 control={control}
-                name="savingsPaymentCount"
+                name="savingsDepositCount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{`${t('new.form.savingsPaymentCountFixed')} *`}</FormLabel>
+                    <FormLabel>{`${t('new.form.savingsDepositCountFixed')} *`}</FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
                         <Input
@@ -129,7 +129,7 @@ export function SavingsFormFields() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        onClick={handleCalculatePaymentCount}
+                        onClick={handleCalculateDepositCount}
                         aria-label={t('new.form.savingsCalculateCount')}
                         title={t('new.form.savingsCalculateCount')}
                       >
@@ -148,10 +148,10 @@ export function SavingsFormFields() {
             <div className="max-w-80">
               <FormField
                 control={control}
-                name="savingsPaymentCount"
+                name="savingsDepositCount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{`${t('new.form.savingsPaymentCountVarying')} *`}</FormLabel>
+                    <FormLabel>{`${t('new.form.savingsDepositCountVarying')} *`}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -176,19 +176,19 @@ export function SavingsFormFields() {
 
           <div className="max-w-80">
             <FormDatePicker
-              name="savingsFirstPaymentDate"
-              label={`${t('new.form.savingsFirstPaymentDate')} *`}
+              name="savingsFirstDepositDate"
+              label={`${t('new.form.savingsFirstDepositDate')} *`}
               placeholder={commonT('ui.form.enterPlaceholder')}
             />
           </div>
 
-          {lastPaymentDate && savingsPaymentCount && (
+          {lastDepositDate && savingsDepositCount && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-0.5 text-sm">
               <p className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>
-                  {t('new.form.savingsLastPayment', {
-                    date: formatDateLong(lastPaymentDate, locale),
+                  {t('new.form.savingsLastDeposit', {
+                    date: formatDateLong(lastDepositDate, locale),
                   })}
                 </span>
               </p>
@@ -196,7 +196,7 @@ export function SavingsFormFields() {
                 <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>
                   {t('new.form.savingsRuntime', {
-                    months: savingsPaymentCount,
+                    months: savingsDepositCount,
                   })}
                 </span>
               </p>

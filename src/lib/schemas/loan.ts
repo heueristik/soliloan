@@ -73,8 +73,8 @@ export const loanSavingsSchema = z.object({
   isSavingsContract: z.boolean().default(false),
   savingsRateType: savingsRateTypeEnum.nullable().optional(),
   savingsMonthlyAmount: optionalNumberSchema,
-  savingsPaymentCount: optionalIntSchema,
-  savingsFirstPaymentDate: createDateSchema(false),
+  savingsDepositCount: optionalIntSchema,
+  savingsFirstDepositDate: createDateSchema(false),
 });
 
 export type LoanSavingsData = z.infer<typeof loanSavingsSchema>;
@@ -90,11 +90,11 @@ export const validateSavings = (data: LoanSavingsData, ctx: z.RefinementCtx) => 
     });
   }
 
-  if (!data.savingsFirstPaymentDate) {
+  if (!data.savingsFirstDepositDate) {
     ctx.addIssue({
       code: 'custom',
       message: 'validation.common.required',
-      path: ['savingsFirstPaymentDate'],
+      path: ['savingsFirstDepositDate'],
     });
   }
 
@@ -106,19 +106,19 @@ export const validateSavings = (data: LoanSavingsData, ctx: z.RefinementCtx) => 
         path: ['savingsMonthlyAmount'],
       });
     }
-    if (!data.savingsPaymentCount) {
+    if (!data.savingsDepositCount) {
       ctx.addIssue({
         code: 'custom',
         message: 'validation.common.required',
-        path: ['savingsPaymentCount'],
+        path: ['savingsDepositCount'],
       });
     }
   } else if (data.savingsRateType === 'VARYING') {
-    if (!data.savingsPaymentCount) {
+    if (!data.savingsDepositCount) {
       ctx.addIssue({
         code: 'custom',
         message: 'validation.common.required',
-        path: ['savingsPaymentCount'],
+        path: ['savingsDepositCount'],
       });
     }
   }
@@ -166,8 +166,8 @@ export type LoanFormClientData = {
   isSavingsContract: boolean;
   savingsRateType: SavingsRateType | null | undefined;
   savingsMonthlyAmount: string;
-  savingsPaymentCount: '' | number | null;
-  savingsFirstPaymentDate: Date | '' | null;
+  savingsDepositCount: '' | number | null;
+  savingsFirstDepositDate: Date | '' | null;
   altInterestMethod: InterestMethod | null | undefined;
   contractStatus: ContractStatus;
   additionalFields: Record<string, unknown> | null | undefined;

@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
-import { calculateSavingsLastPaymentDate } from '@/lib/loans/savings-contract';
+import { calculateSavingsLastDepositDate } from '@/lib/loans/savings-contract';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -60,9 +60,9 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
 
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateLong(d, locale));
 
-  const savingsLastPaymentDate =
-    loan.isSavingsContract && loan.savingsFirstPaymentDate && loan.savingsPaymentCount
-      ? calculateSavingsLastPaymentDate(loan.savingsFirstPaymentDate, loan.savingsPaymentCount)
+  const savingsLastDepositDate =
+    loan.isSavingsContract && loan.savingsFirstDepositDate && loan.savingsDepositCount
+      ? calculateSavingsLastDepositDate(loan.savingsFirstDepositDate, loan.savingsDepositCount)
       : null;
 
   const handleDeleteLoan = async () => {
@@ -203,32 +203,32 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                         value={formatCurrency(loan.savingsMonthlyAmount)}
                       />
                     )}
-                    {loan.savingsPaymentCount != null && (
+                    {loan.savingsDepositCount != null && (
                       <InfoItem
                         label={
                           loan.savingsRateType === 'FIXED'
-                            ? t('table.savingsPaymentCountFixed')
-                            : t('table.savingsPaymentCountVarying')
+                            ? t('table.savingsDepositCountFixed')
+                            : t('table.savingsDepositCountVarying')
                         }
-                        value={loan.savingsPaymentCount}
+                        value={loan.savingsDepositCount}
                       />
                     )}
-                    {loan.savingsFirstPaymentDate && (
+                    {loan.savingsFirstDepositDate && (
                       <InfoItem
-                        label={t('table.savingsFirstPaymentDate')}
-                        value={formatDateLong(loan.savingsFirstPaymentDate, locale)}
+                        label={t('table.savingsFirstDepositDate')}
+                        value={formatDateLong(loan.savingsFirstDepositDate, locale)}
                       />
                     )}
-                    {savingsLastPaymentDate && (
+                    {savingsLastDepositDate && (
                       <InfoItem
-                        label={t('table.savingsLastPayment')}
-                        value={formatDateLong(savingsLastPaymentDate, locale)}
+                        label={t('table.savingsLastDeposit')}
+                        value={formatDateLong(savingsLastDepositDate, locale)}
                       />
                     )}
-                    {loan.savingsPaymentCount != null && (
+                    {loan.savingsDepositCount != null && (
                       <InfoItem
                         label={t('table.savingsRuntime')}
-                        value={t('new.form.savingsRuntime', { months: loan.savingsPaymentCount })}
+                        value={t('new.form.savingsRuntime', { months: loan.savingsDepositCount })}
                       />
                     )}
                   </>

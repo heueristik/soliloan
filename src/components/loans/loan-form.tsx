@@ -80,8 +80,8 @@ export function LoanForm({
     isSavingsContract: initialData?.isSavingsContract ?? false,
     savingsRateType: initialData?.savingsRateType ?? SavingsRateType.FIXED,
     savingsMonthlyAmount: formatNumber(initialData?.savingsMonthlyAmount) || ('' as const),
-    savingsPaymentCount: initialData?.savingsPaymentCount ?? '',
-    savingsFirstPaymentDate: initialData?.savingsFirstPaymentDate || '',
+    savingsDepositCount: initialData?.savingsDepositCount ?? '',
+    savingsFirstDepositDate: initialData?.savingsFirstDepositDate || '',
     additionalFields: additionalFieldDefaults(
       project.configuration.loanAdditionalFields || [],
       (initialData?.additionalFields as AdditionalFieldValues | undefined) || {},

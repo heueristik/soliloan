@@ -86,8 +86,8 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
       savingsRateType: data.isSavingsContract ? data.savingsRateType : null,
       savingsMonthlyAmount:
         data.isSavingsContract && data.savingsRateType === 'FIXED' ? data.savingsMonthlyAmount : null,
-      savingsPaymentCount: data.isSavingsContract ? data.savingsPaymentCount : null,
-      savingsFirstPaymentDate: data.isSavingsContract ? data.savingsFirstPaymentDate : null,
+      savingsDepositCount: data.isSavingsContract ? data.savingsDepositCount : null,
+      savingsFirstDepositDate: data.isSavingsContract ? data.savingsFirstDepositDate : null,
       altInterestMethod: data.altInterestMethod,
       contractStatus: data.contractStatus,
       additionalFields: data.additionalFields ?? {},

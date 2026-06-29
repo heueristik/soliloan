@@ -273,8 +273,8 @@ model Loan {
   isSavingsContract       Boolean          @default(false)
   savingsRateType         SavingsRateType?
   savingsMonthlyAmount    Float?
-  savingsPaymentCount     Int?
-  savingsFirstPaymentDate DateTime?
+  savingsDepositCount     Int?
+  savingsFirstDepositDate DateTime?
   amount                Float
   interestRate          Float
   altInterestMethod     InterestMethod?
