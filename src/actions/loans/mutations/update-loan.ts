@@ -75,6 +75,12 @@ export const updateLoanAction = loanAction
         terminationPeriodType: data.terminationPeriodType,
         duration: data.duration,
         durationType: data.durationType,
+        isSavingsContract: data.isSavingsContract,
+        savingsRateType: data.isSavingsContract ? data.savingsRateType : null,
+        savingsMonthlyAmount:
+          data.isSavingsContract && data.savingsRateType === 'FIXED' ? data.savingsMonthlyAmount : null,
+        savingsPaymentCount: data.isSavingsContract ? data.savingsPaymentCount : null,
+        savingsFirstPaymentDate: data.isSavingsContract ? data.savingsFirstPaymentDate : null,
         altInterestMethod: data.altInterestMethod,
         contractStatus: data.contractStatus,
         additionalFields: data.additionalFields ?? {},

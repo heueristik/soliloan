@@ -270,6 +270,11 @@ model Loan {
   terminationPeriodType DurationType?
   duration              Int?
   durationType          DurationType?
+  isSavingsContract       Boolean          @default(false)
+  savingsRateType         SavingsRateType?
+  savingsMonthlyAmount    Float?
+  savingsPaymentCount     Int?
+  savingsFirstPaymentDate DateTime?
   amount                Float
   interestRate          Float
   altInterestMethod     InterestMethod?
@@ -515,6 +520,11 @@ enum ContractStatus {
 enum DurationType {
   MONTHS
   YEARS
+}
+
+enum SavingsRateType {
+  FIXED
+  VARYING
 }
 
 enum TransactionType {

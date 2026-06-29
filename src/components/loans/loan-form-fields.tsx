@@ -1,7 +1,7 @@
 'use client';
 
 import { ContractStatus, type Lender } from '@prisma/client';
-import { FileX } from 'lucide-react';
+import { FileX, PiggyBank } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
@@ -16,6 +16,7 @@ import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { FormAdditionalFields } from '../form/form-additional-fields';
 import { useProject } from '../providers/project-provider';
 import { LoanInvestmentTypeSection } from './loan-investment-type-section';
+import { SavingsFormFields } from './savings-form-fields';
 import { TerminationFormFields } from './termination-form-fields';
 
 interface LoanFormFieldsProps {
@@ -105,6 +106,11 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
             label: commonT(`enums.loan.contractStatus.${key}`),
           }))}
         />
+      </FormSection>
+
+      {/* Savings Contract Section */}
+      <FormSection icon={<PiggyBank className="w-4 h-4 text-muted-foreground" />} title={t('new.form.savingsInfo')}>
+        <SavingsFormFields />
       </FormSection>
 
       {/* Termination Information Section */}
