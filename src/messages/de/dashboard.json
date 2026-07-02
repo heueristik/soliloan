@@ -814,7 +814,7 @@
       "outstandingDepositSinceDate": "Ausstehender Geldeingang (Seit Datum)",
       "outstandingDepositSinceDays": "Ausstehender Geldeingang (Seit Tagen)",
       "depositsCount": "Geldeingänge (Anzahl)",
-      "expectedDepositsCount": "Erwartete Geldeingänge (Anzahl)",
+      "requiredDepositsCount": "Benötigte Geldeingänge (Anzahl)",
       "outstandingDepositsCount": "Ausstehende Geldeingänge (Anzahl)",
       "withdrawals": "Auszahlungen",
       "savingsRateType": "Einzahlungsart",

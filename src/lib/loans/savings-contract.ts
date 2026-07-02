@@ -18,7 +18,7 @@ export type LoanCoverage = {
 
 export type OutstandingDepositMetrics = {
   depositsCount: number;
-  expectedDepositsCount: number;
+  requiredDepositsCount: number;
   outstandingDepositsCount: number;
   outstandingDepositSum: number | null;
   outstandingDepositSinceDate: Date | null;
@@ -210,7 +210,7 @@ export const calculateOutstandingDeposits = (
 
   return {
     depositsCount: coverage.depositsCount,
-    expectedDepositsCount: coverage.timeline.length,
+    requiredDepositsCount: schedule.length,
     outstandingDepositsCount: outstanding.length,
     outstandingDepositSum,
     outstandingDepositSinceDate,
