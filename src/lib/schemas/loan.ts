@@ -75,6 +75,7 @@ export const loanSavingsSchema = z.object({
   savingsMonthlyAmount: optionalNumberSchema,
   savingsDepositCount: optionalIntSchema,
   savingsFirstDepositDate: createDateSchema(false),
+  savingsLastDepositDate: createDateSchema(false),
 });
 
 export type LoanSavingsData = z.infer<typeof loanSavingsSchema>;
@@ -87,14 +88,6 @@ export const validateSavings = (data: LoanSavingsData, ctx: z.RefinementCtx) => 
       code: 'custom',
       message: 'validation.common.required',
       path: ['savingsRateType'],
-    });
-  }
-
-  if (!data.savingsFirstDepositDate) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'validation.common.required',
-      path: ['savingsFirstDepositDate'],
     });
   }
 
@@ -168,6 +161,7 @@ export type LoanFormClientData = {
   savingsMonthlyAmount: string;
   savingsDepositCount: '' | number | null;
   savingsFirstDepositDate: Date | '' | null;
+  savingsLastDepositDate: Date | '' | null;
   altInterestMethod: InterestMethod | null | undefined;
   contractStatus: ContractStatus;
   additionalFields: Record<string, unknown> | null | undefined;

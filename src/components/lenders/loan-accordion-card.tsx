@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
-import { calculateSavingsLastDepositDate } from '@/lib/loans/savings-contract';
+import { resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -61,8 +61,12 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateLong(d, locale));
 
   const savingsLastDepositDate =
-    loan.isSavingsContract && loan.savingsFirstDepositDate && loan.savingsDepositCount
-      ? calculateSavingsLastDepositDate(loan.savingsFirstDepositDate, loan.savingsDepositCount)
+    loan.isSavingsContract
+      ? resolveSavingsLastDepositDate(
+          loan.savingsFirstDepositDate,
+          loan.savingsLastDepositDate,
+          loan.savingsDepositCount,
+        )
       : null;
 
   const handleDeleteLoan = async () => {
@@ -219,7 +223,13 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                         value={formatDateLong(loan.savingsFirstDepositDate, locale)}
                       />
                     )}
-                    {savingsLastDepositDate && (
+                    {loan.savingsLastDepositDate && (
+                      <InfoItem
+                        label={t('table.savingsLastDepositDate')}
+                        value={formatDateLong(loan.savingsLastDepositDate, locale)}
+                      />
+                    )}
+                    {savingsLastDepositDate && !loan.savingsLastDepositDate && (
                       <InfoItem
                         label={t('table.savingsLastDeposit')}
                         value={formatDateLong(savingsLastDepositDate, locale)}

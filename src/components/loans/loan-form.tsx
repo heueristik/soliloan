@@ -82,6 +82,7 @@ export function LoanForm({
     savingsMonthlyAmount: formatNumber(initialData?.savingsMonthlyAmount) || ('' as const),
     savingsDepositCount: initialData?.savingsDepositCount ?? '',
     savingsFirstDepositDate: initialData?.savingsFirstDepositDate || '',
+    savingsLastDepositDate: initialData?.savingsLastDepositDate || '',
     additionalFields: additionalFieldDefaults(
       project.configuration.loanAdditionalFields || [],
       (initialData?.additionalFields as AdditionalFieldValues | undefined) || {},

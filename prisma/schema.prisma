@@ -275,6 +275,7 @@ model Loan {
   savingsMonthlyAmount    Float?
   savingsDepositCount     Int?
   savingsFirstDepositDate DateTime?
+  savingsLastDepositDate  DateTime?
   amount                Float
   interestRate          Float
   altInterestMethod     InterestMethod?
