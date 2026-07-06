@@ -31,7 +31,8 @@ type FieldMode = 'defined' | 'derived';
 
 const hasDateValue = (value: Date | '' | null | undefined): value is Date =>
   value instanceof Date && !Number.isNaN(value.getTime());
-const hasCountValue = (value: '' | number | null | undefined) => typeof value === 'number' && value >= 1;
+const hasCountValue = (value: '' | number | null | undefined): value is number =>
+  typeof value === 'number' && value >= 1;
 const hasAmountValue = (value: string) => {
   const parser = new NumberParser('de-DE');
   const parsed = parser.parse(value);
@@ -165,10 +166,10 @@ export function SavingsFormFields() {
       };
 
       if (changed === 'savingsFirstDepositDate') {
-        if (hasDepositCount) {
+        if (hasFirstDepositDate && hasDepositCount) {
           const last = calculateSavingsLastDepositDate(firstDepositDate, depositCount);
           if (last) setDerivedValue('savingsLastDepositDate', last);
-        } else if (hasLastDepositDate) {
+        } else if (hasFirstDepositDate && hasLastDepositDate) {
           const count = calculateSavingsDepositCountFromDates(firstDepositDate, lastDepositDate);
           if (count) {
             setDerivedValue('savingsDepositCount', count);
@@ -182,7 +183,7 @@ export function SavingsFormFields() {
       }
 
       if (changed === 'savingsLastDepositDate') {
-        if (hasFirstDepositDate) {
+        if (hasFirstDepositDate && hasLastDepositDate) {
           const count = calculateSavingsDepositCountFromDates(firstDepositDate, lastDepositDate);
           if (count) {
             setDerivedValue('savingsDepositCount', count);
@@ -191,7 +192,7 @@ export function SavingsFormFields() {
               if (monthly != null) setDerivedValue('savingsMonthlyAmount', formatNumber(monthly));
             }
           }
-        } else if (hasDepositCount) {
+        } else if (hasLastDepositDate && hasDepositCount) {
           const first = calculateSavingsFirstDepositDate(lastDepositDate, depositCount);
           if (first) setDerivedValue('savingsFirstDepositDate', first);
         }
