@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import { parseEntityDateFilterValue } from '@/types/entity-date-filter';
+import { parseDateFilterValue } from '@/types/date-filter-value';
 
 function endOfDay(date: Date): Date {
   const end = new Date(date);
@@ -8,7 +8,7 @@ function endOfDay(date: Date): Date {
   return end;
 }
 
-export function resolveEntityDateFilterBounds(
+export function resolveDateFilterBounds(
   filterValue: unknown,
   referenceDate: Date,
 ): { start: Date | null; end: Date | null } | null {
@@ -16,20 +16,41 @@ export function resolveEntityDateFilterBounds(
     return null;
   }
 
-  const parsed = parseEntityDateFilterValue(filterValue);
+  const parsed = parseDateFilterValue(filterValue);
 
-  if (parsed.mode === 'relative') {
-    const end = moment(referenceDate).endOf('day');
-    const start = moment(referenceDate).subtract(parsed.amount, parsed.unit).startOf('day');
-    return { start: start.toDate(), end: end.toDate() };
+  switch (parsed.operator) {
+    case 'empty':
+      return null;
+    case 'between': {
+      if (!parsed.start && !parsed.end) {
+        return null;
+      }
+      return {
+        start: parsed.start ? new Date(parsed.start) : null,
+        end: parsed.end ? endOfDay(new Date(parsed.end)) : null,
+      };
+    }
+    case 'last': {
+      const end = moment(referenceDate).endOf('day');
+      const start = moment(referenceDate).subtract(parsed.amount, parsed.unit).startOf('day');
+      return { start: start.toDate(), end: end.toDate() };
+    }
+    case 'thisMonth': {
+      const start = moment(referenceDate).startOf('month').startOf('day');
+      const endOfMonth = moment(referenceDate).endOf('month').endOf('day');
+      const end = moment.min(endOfMonth, moment(referenceDate).endOf('day'));
+      return { start: start.toDate(), end: end.toDate() };
+    }
+    case 'thisYear': {
+      const start = moment(referenceDate).startOf('year').startOf('day');
+      const endOfYear = moment(referenceDate).endOf('year').endOf('day');
+      const end = moment.min(endOfYear, moment(referenceDate).endOf('day'));
+      return { start: start.toDate(), end: end.toDate() };
+    }
+    case 'year': {
+      const start = moment().year(parsed.year).startOf('year').startOf('day');
+      const end = moment().year(parsed.year).endOf('year').endOf('day');
+      return { start: start.toDate(), end: end.toDate() };
+    }
   }
-
-  if (!parsed.start && !parsed.end) {
-    return null;
-  }
-
-  return {
-    start: parsed.start ? new Date(parsed.start) : null,
-    end: parsed.end ? endOfDay(new Date(parsed.end)) : null,
-  };
 }

@@ -42,7 +42,13 @@ export function EntityFilterControl({
     case 'number':
       return <NumberFilter filterState={filterState} onFilterChange={(v) => onChange(v)} />;
     case 'date':
-      return <EntityDateFilter value={value} onChange={onChange} />;
+      return (
+        <EntityDateFilter
+          value={value}
+          onChange={onChange}
+          allowEmpty={definition.allowEmpty}
+        />
+      );
     default:
       return (
         <TextFilter

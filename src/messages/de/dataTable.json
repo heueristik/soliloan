@@ -21,9 +21,19 @@
   "rowsPerPage": "Zeilen pro Seite",
   "noResults": "Keine Ergebnisse.",
   "to": "bis",
+  "dateFilterOperator": "Zeitraum",
+  "dateFilterOperators": {
+    "between": "Von Bis",
+    "last": "Letzte",
+    "thisMonth": "Diesen Monat",
+    "thisYear": "Dieses Jahr",
+    "year": "Jahr",
+    "empty": "Leer"
+  },
+  "dateFilterRelative": "Letzte",
+  "dateFilterStart": "Startdatum",
+  "dateFilterEnd": "Enddatum",
   "globalFilter": "In allen Spalten suchen...",
-  "startDate": "Startdatum",
-  "endDate": "Enddatum",
   "bulkBar": {
     "selected": "{count} ausgewählt",
     "deselect": "Auswahl aufheben"

@@ -1,5 +1,6 @@
 import type { ColumnFiltersState } from '@tanstack/react-table';
 
+import { isInactiveDateFilterValue } from '@/types/date-filter-value';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 
 import {
@@ -14,6 +15,7 @@ type ColumnFilterConfig = {
   type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
   options?: { label: string; value: string }[];
   label?: string;
+  allowEmpty?: boolean;
 };
 
 interface DataTableColumnFiltersProps {
@@ -29,6 +31,13 @@ interface DataTableColumnFiltersProps {
 }
 
 function isEmptyFilterValue(value: unknown): boolean {
+  if (value && typeof value === 'object' && !Array.isArray(value) && 'operator' in value) {
+    const operator = (value as { operator: string }).operator;
+    if (operator === 'empty') {
+      return false;
+    }
+    return isInactiveDateFilterValue(value);
+  }
   return value === '' || value == null || (Array.isArray(value) && value.every((v) => v === '' || v == null));
 }
 
@@ -65,7 +74,7 @@ export function DataTableColumnFilters({
         return (
           <div key={columnId} className="flex flex-col space-y-2">
             <span className="text-sm font-medium">{filterConfig.label || columnId}:</span>
-            <div className="flex items-center space-x-2">
+            <div className="flex min-w-0 items-center">
               {(() => {
                 switch (filterConfig.type) {
                   case 'select':
@@ -101,6 +110,7 @@ export function DataTableColumnFilters({
                     return (
                       <DateFilter
                         filterState={filterState}
+                        allowEmpty={filterConfig.allowEmpty}
                         onFilterChange={(value) => {
                           handleFilterChange(columnId, value);
                         }}

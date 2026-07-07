@@ -11,7 +11,7 @@ import {
 
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
-import type { EntityFilterFieldOption, EntityFilterEntity } from '@/types/entity-filters';
+import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date';
@@ -20,6 +20,7 @@ export type DataTableColumnFilterDefinition = {
   type: DataTableColumnFilterType;
   label: string;
   options?: { label: string; value: string }[];
+  allowEmpty?: boolean;
 };
 
 const LOAN_STATUS_OPTIONS = [
@@ -53,12 +54,16 @@ export function buildLoanColumnFiltersMap(
 ): Record<string, DataTableColumnFilterDefinition> {
   return {
     loanNumber: { type: 'number', label: t('table.loanNumber') },
-    signDate: { type: 'date', label: t('table.signDate') },
+    signDate: { type: 'date', label: t('table.signDate'), allowEmpty: false },
     amount: { type: 'number', label: t('table.amount') },
     balance: { type: 'number', label: t('table.balance') },
     deposits: { type: 'number', label: t('table.deposits') },
     outstandingDepositSum: { type: 'number', label: t('table.outstandingDepositSum') },
-    outstandingDepositSinceDate: { type: 'date', label: t('table.outstandingDepositSinceDate') },
+    outstandingDepositSinceDate: {
+      type: 'date',
+      label: t('table.outstandingDepositSinceDate'),
+      allowEmpty: true,
+    },
     outstandingDepositSinceDays: { type: 'number', label: t('table.outstandingDepositSinceDays') },
     depositsCount: { type: 'number', label: t('table.depositsCount') },
     requiredDepositsCount: { type: 'number', label: t('table.requiredDepositsCount') },
@@ -80,7 +85,7 @@ export function buildLoanColumnFiltersMap(
       type: 'text',
       label: t('table.terminationModalities'),
     },
-    repayDate: { type: 'date', label: t('table.repayDate') },
+    repayDate: { type: 'date', label: t('table.repayDate'), allowEmpty: true },
     loanTermDays: { type: 'number', label: t('table.loanTerm') },
     repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod') },
     status: {
@@ -238,7 +243,7 @@ export function buildTransactionColumnFiltersMap(
         value,
       })),
     },
-    'transaction.date': { type: 'date', label: t('table.date') },
+    'transaction.date': { type: 'date', label: t('table.date'), allowEmpty: true },
     'transaction.amount': { type: 'number', label: t('table.amount') },
     'transaction.paymentType': {
       type: 'select',

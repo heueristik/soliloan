@@ -1,5 +1,6 @@
 import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
-import { resolveEntityDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
+import { resolveDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
+import { parseDateFilterValue } from '@/types/date-filter-value';
 
 export function matchesTextFilter(value: unknown, filterValue: unknown): boolean {
   if (value === null || value === undefined) {
@@ -37,20 +38,27 @@ export function matchesNumberRangeFilter(value: unknown, filterValue: unknown): 
   return true;
 }
 
-export function matchesDateRangeFilter(
+export function matchesDateFilter(
   value: unknown,
   filterValue: unknown,
   referenceDate: Date = new Date(),
 ): boolean {
+  const parsed = parseDateFilterValue(filterValue);
+
+  if (parsed.operator === 'empty') {
+    return value === null || value === undefined;
+  }
+
   if (!value) {
     return false;
   }
+
   const dateValue = value instanceof Date ? value : new Date(String(value));
   if (Number.isNaN(dateValue.getTime())) {
     return false;
   }
 
-  const bounds = resolveEntityDateFilterBounds(filterValue, referenceDate);
+  const bounds = resolveDateFilterBounds(filterValue, referenceDate);
   if (!bounds) {
     return true;
   }
@@ -96,7 +104,7 @@ export function matchesFilterByType(
     case 'number':
       return matchesNumberRangeFilter(value, filterValue);
     case 'date':
-      return matchesDateRangeFilter(value, filterValue, options?.referenceDate);
+      return matchesDateFilter(value, filterValue, options?.referenceDate);
     case 'select':
       return matchesSelectFilter(value, filterValue);
     case 'multi-select':
