@@ -2,24 +2,41 @@ import type { FilterOperatorValue } from '@/types/filter-operators';
 
 export const DATE_FILTER_OPERATORS = [
   'between',
-  'last',
+  'olderThan',
+  'newerThan',
   'thisMonth',
+  'lastMonth',
   'thisYear',
-  'year',
-  'empty',
+  'lastYear',
+  'last',
+  'next',
 ] as const;
 
+export const DATE_FILTER_LEGACY_OPERATORS = ['year', 'empty'] as const;
+
 export type DateFilterOperator = (typeof DATE_FILTER_OPERATORS)[number];
+export type DateFilterLegacyOperator = (typeof DATE_FILTER_LEGACY_OPERATORS)[number];
+export type DateFilterOperatorWithLegacy = DateFilterOperator | DateFilterLegacyOperator;
 
 export const DATE_FILTER_LAST_UNITS = ['days', 'months'] as const;
 
 export type DateFilterLastUnit = (typeof DATE_FILTER_LAST_UNITS)[number];
 
+export type DateFilterRelativeAmountValue = {
+  amount: number;
+  unit: DateFilterLastUnit;
+};
+
 export type DateFilterValue =
   | FilterOperatorValue<'between', { start: string | null; end: string | null }>
-  | FilterOperatorValue<'last', { amount: number; unit: DateFilterLastUnit }>
+  | FilterOperatorValue<'last', DateFilterRelativeAmountValue>
+  | FilterOperatorValue<'next', DateFilterRelativeAmountValue>
+  | FilterOperatorValue<'olderThan', DateFilterRelativeAmountValue>
+  | FilterOperatorValue<'newerThan', DateFilterRelativeAmountValue>
   | FilterOperatorValue<'thisMonth'>
+  | FilterOperatorValue<'lastMonth'>
   | FilterOperatorValue<'thisYear'>
+  | FilterOperatorValue<'lastYear'>
   | FilterOperatorValue<'year', { year: number }>
   | FilterOperatorValue<'empty'>;
 
@@ -32,18 +49,28 @@ export function createDefaultDateFilterValue(): DateFilterValue {
 }
 
 export function createDefaultDateFilterValueForOperator(
-  operator: DateFilterOperator,
+  operator: DateFilterOperatorWithLegacy,
   referenceDate: Date = new Date(),
 ): DateFilterValue {
   switch (operator) {
     case 'between':
       return createDefaultDateFilterValue();
-    case 'last':
-      return { operator: 'last', amount: 12, unit: 'months' };
+    case 'olderThan':
+      return { operator: 'olderThan', amount: 30, unit: 'days' };
+    case 'newerThan':
+      return { operator: 'newerThan', amount: 30, unit: 'days' };
     case 'thisMonth':
       return { operator: 'thisMonth' };
+    case 'lastMonth':
+      return { operator: 'lastMonth' };
     case 'thisYear':
       return { operator: 'thisYear' };
+    case 'lastYear':
+      return { operator: 'lastYear' };
+    case 'last':
+      return { operator: 'last', amount: 12, unit: 'months' };
+    case 'next':
+      return { operator: 'next', amount: 12, unit: 'months' };
     case 'year':
       return { operator: 'year', year: referenceDate.getFullYear() };
     case 'empty':
@@ -55,8 +82,29 @@ function isDateFilterLastUnit(value: unknown): value is DateFilterLastUnit {
   return typeof value === 'string' && (DATE_FILTER_LAST_UNITS as readonly string[]).includes(value);
 }
 
-function isDateFilterOperator(value: unknown): value is DateFilterOperator {
-  return typeof value === 'string' && (DATE_FILTER_OPERATORS as readonly string[]).includes(value);
+function parseRelativeAmount(value: unknown, fallback: number): number {
+  const parsedAmount = Number(value);
+  return Number.isFinite(parsedAmount) ? Math.round(parsedAmount) : fallback;
+}
+
+function parseRelativeAmountFilter(
+  value: unknown,
+  operator: 'last' | 'next' | 'olderThan' | 'newerThan',
+  defaults: DateFilterRelativeAmountValue,
+): FilterOperatorValue<typeof operator, DateFilterRelativeAmountValue> {
+  const { amount, unit } = value as { amount?: number; unit?: DateFilterLastUnit };
+  return {
+    operator,
+    amount: parseRelativeAmount(amount, defaults.amount),
+    unit: isDateFilterLastUnit(unit) ? unit : defaults.unit,
+  };
+}
+
+function isDateFilterOperator(value: unknown): value is DateFilterOperatorWithLegacy {
+  return (
+    typeof value === 'string' &&
+    ([...DATE_FILTER_OPERATORS, ...DATE_FILTER_LEGACY_OPERATORS] as readonly string[]).includes(value)
+  );
 }
 
 export function parseDateFilterValue(raw: unknown): DateFilterValue {
@@ -64,7 +112,7 @@ export function parseDateFilterValue(raw: unknown): DateFilterValue {
     return createDefaultDateFilterValue();
   }
 
-  const value = raw as { operator?: DateFilterOperator };
+  const value = raw as { operator?: DateFilterOperatorWithLegacy };
   if (!isDateFilterOperator(value.operator)) {
     return createDefaultDateFilterValue();
   }
@@ -78,19 +126,22 @@ export function parseDateFilterValue(raw: unknown): DateFilterValue {
         end: typeof end === 'string' ? end : null,
       };
     }
-    case 'last': {
-      const { amount, unit } = value as { amount?: number; unit?: DateFilterLastUnit };
-      const parsedAmount = Number(amount);
-      return {
-        operator: 'last',
-        amount: Number.isFinite(parsedAmount) && parsedAmount > 0 ? Math.round(parsedAmount) : 12,
-        unit: isDateFilterLastUnit(unit) ? unit : 'months',
-      };
-    }
+    case 'last':
+      return parseRelativeAmountFilter(value, 'last', { amount: 12, unit: 'months' });
+    case 'next':
+      return parseRelativeAmountFilter(value, 'next', { amount: 12, unit: 'months' });
+    case 'olderThan':
+      return parseRelativeAmountFilter(value, 'olderThan', { amount: 30, unit: 'days' });
+    case 'newerThan':
+      return parseRelativeAmountFilter(value, 'newerThan', { amount: 30, unit: 'days' });
     case 'thisMonth':
       return { operator: 'thisMonth' };
+    case 'lastMonth':
+      return { operator: 'lastMonth' };
     case 'thisYear':
       return { operator: 'thisYear' };
+    case 'lastYear':
+      return { operator: 'lastYear' };
     case 'year': {
       const { year } = value as { year?: number };
       const parsedYear = Number(year);

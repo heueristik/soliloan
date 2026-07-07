@@ -1,102 +1,30 @@
 'use client';
 
-import { de, enUS } from 'date-fns/locale';
-import { X } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
-import { StatDeltaRangeInput } from '@/components/dashboard/widgets/stat-delta-range-input';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { FilterDateSegment } from '@/components/filters/filter-date-segment';
+import {
+  FilterFieldGroup,
+  filterInputSegmentClass,
+  filterOperatorSegmentClass,
+  filterUnitSegmentClass,
+  type FilterFieldVariant,
+} from '@/components/filters/filter-field-group';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn, formatDateLong, formatDateShort } from '@/lib/utils';
 import type { StatDeltaUnit } from '@/types/dashboard-widgets/stat-widget';
 import {
   createDefaultDateFilterValueForOperator,
   DATE_FILTER_LAST_UNITS,
+  DATE_FILTER_LEGACY_OPERATORS,
   DATE_FILTER_OPERATORS,
-  type DateFilterOperator,
+  type DateFilterLastUnit,
+  type DateFilterOperatorWithLegacy,
+  type DateFilterRelativeAmountValue,
   type DateFilterValue,
   parseDateFilterValue,
 } from '@/types/date-filter-value';
-
-const DATE_INPUT_WIDTH = 'w-[7.25rem]';
-
-function toIsoDateString(date: Date): string {
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-}
-
-function BetweenDateButton({
-  label,
-  value,
-  onChange,
-  onClear,
-  dateLocale,
-  locale,
-  variant,
-  className,
-}: {
-  label: string;
-  value: string | null;
-  onChange: (value: string | undefined) => void;
-  onClear: () => void;
-  dateLocale: typeof de;
-  locale: string;
-  variant: 'compact' | 'default';
-  className?: string;
-}) {
-  const formatDateValue = variant === 'compact' ? formatDateShort : formatDateLong;
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size={variant === 'compact' ? 'sm' : 'default'}
-          className={cn(
-            DATE_INPUT_WIDTH,
-            'shrink-0 justify-start px-2 text-left font-normal',
-            variant === 'compact' && 'h-8 text-xs',
-            !value && 'text-muted-foreground',
-            className,
-          )}
-        >
-          {value ? (
-            <div className="flex min-w-0 items-center justify-between gap-1 w-full">
-              <span className="truncate">{formatDateValue(value, locale)}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-4 w-4 shrink-0 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClear();
-                }}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          ) : (
-            <span className="truncate">{label}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={value ? new Date(value) : undefined}
-          onSelect={(date) => onChange(date ? toIsoDateString(date) : undefined)}
-          initialFocus
-          locale={dateLocale}
-        />
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 function OperatorSelect({
   value,
@@ -105,21 +33,15 @@ function OperatorSelect({
   operatorLabel,
   variant,
 }: {
-  value: DateFilterOperator;
-  onChange: (operator: DateFilterOperator) => void;
-  availableOperators: DateFilterOperator[];
-  operatorLabel: (operator: DateFilterOperator) => string;
-  variant: 'compact' | 'default';
+  value: DateFilterOperatorWithLegacy;
+  onChange: (operator: DateFilterOperatorWithLegacy) => void;
+  availableOperators: DateFilterOperatorWithLegacy[];
+  operatorLabel: (operator: DateFilterOperatorWithLegacy) => string;
+  variant: FilterFieldVariant;
 }) {
   return (
-    <Select value={value} onValueChange={(op) => onChange(op as DateFilterOperator)}>
-      <SelectTrigger
-        className={cn(
-          'w-auto shrink-0 gap-1',
-          variant === 'compact' ? 'h-8 px-2 text-xs' : 'h-9 px-3',
-          '[&>span]:line-clamp-none [&>span]:whitespace-nowrap',
-        )}
-      >
+    <Select value={value} onValueChange={(op) => onChange(op as DateFilterOperatorWithLegacy)}>
+      <SelectTrigger className={filterOperatorSegmentClass(variant)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -133,68 +55,78 @@ function OperatorSelect({
   );
 }
 
-export function DateFilterWithOperator({
+function RelativeDateAmountFields({
   value,
   onChange,
-  allowEmpty = false,
-  referenceDate,
-  translationNamespace = 'dataTable',
-  variant = 'default',
+  variant,
+  unitOptions,
 }: {
-  value: unknown;
-  onChange: (value: DateFilterValue) => void;
-  allowEmpty?: boolean;
-  referenceDate?: Date;
-  translationNamespace?: string;
-  variant?: 'compact' | 'default';
+  value: DateFilterRelativeAmountValue;
+  onChange: (value: DateFilterRelativeAmountValue) => void;
+  variant: FilterFieldVariant;
+  unitOptions: { value: StatDeltaUnit; label: string }[];
 }) {
-  const t = useTranslations(translationNamespace);
-  const tStat = useTranslations('dashboard.customizer.stat');
-  const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
-  const refDate = referenceDate ?? new Date();
-
-  const parsed = useMemo(() => parseDateFilterValue(value), [value]);
-
-  const availableOperators = useMemo(() => {
-    return DATE_FILTER_OPERATORS.filter((op) => op !== 'empty' || allowEmpty);
-  }, [allowEmpty]);
-
-  const unitOptions = useMemo(
-    () =>
-      DATE_FILTER_LAST_UNITS.map((unit) => ({
-        value: unit as StatDeltaUnit,
-        label: tStat(`deltaUnits.${unit}`),
-      })),
-    [tStat],
-  );
-
-  const setOperator = (operator: DateFilterOperator) => {
-    if (operator === parsed.operator) {
-      return;
-    }
-    onChange(createDefaultDateFilterValueForOperator(operator, refDate));
-  };
-
-  const operatorLabel = (operator: DateFilterOperator) => t(`dateFilterOperators.${operator}`);
-
   return (
-    <div className="flex w-full flex-wrap items-center gap-2">
-      <OperatorSelect
-        value={parsed.operator}
-        onChange={setOperator}
-        availableOperators={availableOperators}
-        operatorLabel={operatorLabel}
-        variant={variant}
+    <>
+      <Input
+        type="number"
+        step={1}
+        value={value.amount}
+        onChange={(e) => {
+          const raw = e.target.value;
+          onChange({
+            amount: raw === '' ? 0 : Number.parseInt(raw, 10) || 0,
+            unit: value.unit,
+          });
+        }}
+        className={filterInputSegmentClass(variant, 'amount')}
       />
+      <Select
+        value={value.unit}
+        onValueChange={(unit) =>
+          onChange({
+            amount: value.amount,
+            unit: unit as DateFilterLastUnit,
+          })
+        }
+      >
+        <SelectTrigger className={filterUnitSegmentClass(variant)}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {unitOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </>
+  );
+}
 
-      {parsed.operator === 'between' ? (
+function DateFilterPayload({
+  parsed,
+  onChange,
+  variant,
+  refDate,
+  t,
+  unitOptions,
+}: {
+  parsed: DateFilterValue;
+  onChange: (value: DateFilterValue) => void;
+  variant: FilterFieldVariant;
+  refDate: Date;
+  t: ReturnType<typeof useTranslations>;
+  unitOptions: { value: StatDeltaUnit; label: string }[];
+}) {
+  switch (parsed.operator) {
+    case 'between':
+      return (
         <>
-          <BetweenDateButton
+          <FilterDateSegment
             label={t('dateFilterStart')}
             value={parsed.start}
-            locale={locale}
-            dateLocale={dateLocale}
             variant={variant}
             onChange={(start) =>
               onChange({
@@ -211,11 +143,9 @@ export function DateFilterWithOperator({
               })
             }
           />
-          <BetweenDateButton
+          <FilterDateSegment
             label={t('dateFilterEnd')}
             value={parsed.end}
-            locale={locale}
-            dateLocale={dateLocale}
             variant={variant}
             onChange={(end) =>
               onChange({
@@ -233,20 +163,27 @@ export function DateFilterWithOperator({
             }
           />
         </>
-      ) : null}
-
-      {parsed.operator === 'last' ? (
-        <StatDeltaRangeInput
+      );
+    case 'last':
+    case 'next':
+    case 'olderThan':
+    case 'newerThan':
+      return (
+        <RelativeDateAmountFields
           value={{ amount: parsed.amount, unit: parsed.unit }}
-          onChange={(next) => onChange({ operator: 'last', amount: next.amount, unit: next.unit as typeof parsed.unit })}
-          numberLabel={t('dateFilterRelative')}
+          onChange={({ amount, unit }) =>
+            onChange({
+              operator: parsed.operator,
+              amount,
+              unit,
+            })
+          }
+          variant={variant}
           unitOptions={unitOptions}
-          hideLabel
-          className="w-auto shrink-0"
         />
-      ) : null}
-
-      {parsed.operator === 'year' ? (
+      );
+    case 'year':
+      return (
         <Input
           type="number"
           min={1900}
@@ -258,9 +195,105 @@ export function DateFilterWithOperator({
             const year = raw === '' ? refDate.getFullYear() : Number.parseInt(raw, 10) || refDate.getFullYear();
             onChange({ operator: 'year', year });
           }}
-          className={cn('w-24 shrink-0', variant === 'compact' && 'h-8 text-xs')}
+          className={filterInputSegmentClass(variant, 'year')}
         />
-      ) : null}
-    </div>
+      );
+    default:
+      return null;
+  }
+}
+
+function hasPayload(operator: DateFilterOperatorWithLegacy): boolean {
+  return (
+    operator === 'between' ||
+    operator === 'last' ||
+    operator === 'next' ||
+    operator === 'olderThan' ||
+    operator === 'newerThan' ||
+    operator === 'year'
+  );
+}
+
+export function DateFilterWithOperator({
+  value,
+  onChange,
+  allowEmpty = false,
+  referenceDate,
+  translationNamespace = 'dataTable',
+  variant = 'default',
+}: {
+  value: unknown;
+  onChange: (value: DateFilterValue) => void;
+  allowEmpty?: boolean;
+  referenceDate?: Date;
+  translationNamespace?: string;
+  variant?: FilterFieldVariant;
+}) {
+  const t = useTranslations(translationNamespace);
+  const tStat = useTranslations('dashboard.customizer.stat');
+  const refDate = referenceDate ?? new Date();
+
+  const parsed = useMemo(() => parseDateFilterValue(value), [value]);
+
+  const availableOperators = useMemo(() => {
+    const legacy = allowEmpty ? DATE_FILTER_LEGACY_OPERATORS.filter((op) => op === 'empty') : [];
+    return [...DATE_FILTER_OPERATORS, ...legacy];
+  }, [allowEmpty]);
+
+  const unitOptions = useMemo(
+    () =>
+      DATE_FILTER_LAST_UNITS.map((unit) => ({
+        value: unit as StatDeltaUnit,
+        label: tStat(`deltaUnits.${unit}`),
+      })),
+    [tStat],
+  );
+
+  const setOperator = (operator: DateFilterOperatorWithLegacy) => {
+    if (operator === parsed.operator) {
+      return;
+    }
+    onChange(createDefaultDateFilterValueForOperator(operator, refDate));
+  };
+
+  const operatorLabel = (operator: DateFilterOperatorWithLegacy) => t(`dateFilterOperators.${operator}`);
+  const showPayload = hasPayload(parsed.operator);
+  const useVerticalLayout = variant === 'compact' && showPayload;
+
+  const operatorSelect = (
+    <OperatorSelect
+      value={parsed.operator}
+      onChange={setOperator}
+      availableOperators={availableOperators}
+      operatorLabel={operatorLabel}
+      variant={variant}
+    />
+  );
+
+  const payload = showPayload ? (
+    <DateFilterPayload
+      parsed={parsed}
+      onChange={onChange}
+      variant={variant}
+      refDate={refDate}
+      t={t}
+      unitOptions={unitOptions}
+    />
+  ) : null;
+
+  if (useVerticalLayout) {
+    return (
+      <FilterFieldGroup orientation="vertical">
+        {operatorSelect}
+        <FilterFieldGroup className="min-w-0">{payload}</FilterFieldGroup>
+      </FilterFieldGroup>
+    );
+  }
+
+  return (
+    <FilterFieldGroup>
+      {operatorSelect}
+      {payload}
+    </FilterFieldGroup>
   );
 }

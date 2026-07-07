@@ -138,9 +138,14 @@
       "dateFilterOperator": "Zeitraum",
       "dateFilterOperators": {
         "between": "Von Bis",
-        "last": "Letzte",
+        "olderThan": "Älter als",
+        "newerThan": "Neuer als",
         "thisMonth": "Diesen Monat",
+        "lastMonth": "Letzten Monat",
         "thisYear": "Dieses Jahr",
+        "lastYear": "Letztes Jahr",
+        "last": "Letzte…",
+        "next": "Nächste…",
         "year": "Jahr",
         "empty": "Leer"
       },
