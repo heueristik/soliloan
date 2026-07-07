@@ -155,6 +155,16 @@ export function getLoanFilterValue(
       return loan.contractStatus;
     case 'isSavingsContract':
       return loan.isSavingsContract ? 'true' : 'false';
+    case 'outstandingDepositSum':
+      return loan.outstandingDepositSum;
+    case 'outstandingDepositSinceDate':
+      return loan.outstandingDepositSinceDate;
+    case 'depositsCount':
+      return loan.depositsCount;
+    case 'requiredDepositsCount':
+      return loan.requiredDepositsCount;
+    case 'outstandingDepositsCount':
+      return loan.outstandingDepositsCount;
     case 'balance':
     case 'deposits':
     case 'withdrawals':

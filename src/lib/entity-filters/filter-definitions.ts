@@ -64,7 +64,6 @@ export function buildLoanColumnFiltersMap(
       label: t('table.outstandingDepositSinceDate'),
       allowEmpty: true,
     },
-    outstandingDepositSinceDays: { type: 'number', label: t('table.outstandingDepositSinceDays') },
     depositsCount: { type: 'number', label: t('table.depositsCount') },
     requiredDepositsCount: { type: 'number', label: t('table.requiredDepositsCount') },
     outstandingDepositsCount: { type: 'number', label: t('table.outstandingDepositsCount') },

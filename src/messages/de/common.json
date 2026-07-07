@@ -248,6 +248,7 @@
     "zeroDays": "0 Tage",
     "days": "{count, plural, one {# Tag} other {# Tage}}",
     "months": "{count, plural, one {# Monat} other {# Monate}}",
-    "years": "{count, plural, one {# Jahr} other {# Jahre}}"
+    "years": "{count, plural, one {# Jahr} other {# Jahre}}",
+    "sinceDays": "{count, plural, =0 {0 Tagen} one {# Tag} other {# Tagen}}"
   }
 }

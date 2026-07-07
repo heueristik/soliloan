@@ -3,6 +3,7 @@ import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/rea
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
+import { dateRangeFilter } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { formatDurationDays } from '@/lib/format-duration';
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
@@ -359,6 +360,53 @@ export function createDateColumn<T>(
     ),
     { type: 'date' },
   );
+}
+
+type OutstandingDepositSinceDateRow = {
+  outstandingDepositSinceDays: number | null;
+};
+
+export function createOutstandingDepositSinceDateColumn<T extends OutstandingDepositSinceDateRow>(
+  accessorKey: string,
+  headerKey: string | undefined,
+  t: (key: string) => string,
+  locale: string | undefined,
+  durationT: (key: string, values?: Record<string, number>) => string,
+  sinceHintT: (key: string, values?: Record<string, string>) => string,
+): ColumnDef<T> {
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      cell: ({ row }) => {
+        const dateStr = row.getValue(accessorKey) as string;
+        if (!dateStr) return '';
+        try {
+          const date = new Date(dateStr);
+          if (Number.isNaN(date.getTime())) {
+            return '';
+          }
+          const formattedDate = date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
+          const days = row.original.outstandingDepositSinceDays;
+          if (days == null) {
+            return formattedDate;
+          }
+          const duration = durationT('sinceDays', { count: Math.round(days) });
+          return `${formattedDate}${sinceHintT('table.outstandingDepositSinceHint', { duration })}`;
+        } catch (_) {
+          return '';
+        }
+      },
+    },
+    t,
+  );
+
+  column.filterFn = dateRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, { type: 'date' });
 }
 
 type PercentageColumnFormattingOptions = {
