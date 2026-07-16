@@ -1,5 +1,6 @@
 import type { ColumnFiltersState } from '@tanstack/react-table';
 
+import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 import { isInactiveDateFilterValue } from '@/types/date-filter-value';
 import { isInactiveEnumFilterValue } from '@/types/enum-filter-value';
 import { isInactiveNumberFilterValue } from '@/types/number-filter-value';
@@ -7,6 +8,7 @@ import { isInactiveTextFilterValue } from '@/types/text-filter-value';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 
 import {
+  BooleanFilter,
   DateFilter,
   MultiSelectFilter,
   NumberFilter,
@@ -15,7 +17,7 @@ import {
 } from './data-table-column-filters/index';
 
 type ColumnFilterConfig = {
-  type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
+  type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
   options?: { label: string; value: string }[];
   label?: string;
   allowEmpty?: boolean;
@@ -34,6 +36,10 @@ interface DataTableColumnFiltersProps {
 }
 
 function isEmptyFilterValue(value: unknown, type: ColumnFilterConfig['type']): boolean {
+  if (type === 'boolean') {
+    return isInactiveBooleanFilterValue(value);
+  }
+
   if (value && typeof value === 'object' && !Array.isArray(value) && 'operator' in value) {
     const operator = (value as { operator: string }).operator;
     if (operator === 'empty' || operator === 'notEmpty') {
@@ -104,6 +110,15 @@ export function DataTableColumnFilters({
             <div className="flex min-w-0 items-center">
               {(() => {
                 switch (filterConfig.type) {
+                  case 'boolean':
+                    return (
+                      <BooleanFilter
+                        filterState={filterState}
+                        onFilterChange={(value) => {
+                          handleFilterChange(columnId, value, 'boolean');
+                        }}
+                      />
+                    );
                   case 'select':
                     return (
                       <SelectFilter

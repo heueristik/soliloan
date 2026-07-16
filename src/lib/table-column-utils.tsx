@@ -6,6 +6,7 @@ import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/da
 import { dateRangeFilter } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import {
+  matchesBooleanFilter,
   matchesEnumFilter,
   matchesTextFilter,
 } from '@/lib/entity-filters/filter-matchers';
@@ -21,7 +22,7 @@ export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue
 // Define the custom filter function for boolean fields
 export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   const raw = row.getValue(columnId) === true ? 'true' : 'false';
-  return matchesEnumFilter(raw, filterValue, 'eq');
+  return matchesBooleanFilter(raw, filterValue);
 }
 
 // Define the custom filter function for enum fields
@@ -902,6 +903,12 @@ export function createAdditionalFieldFilters<T>(
         type: 'number' as const,
         label: field.name,
         allowEmpty: true,
+      };
+    }
+    if (field.type === AdditionalFieldType.BOOLEAN) {
+      filters[`${accessorKey}.${field.id}`] = {
+        type: 'boolean' as const,
+        label: field.name,
       };
     }
   });

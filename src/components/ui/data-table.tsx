@@ -86,7 +86,7 @@ export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) =
 
 export type DataTableColumnFilters = {
   [key: string]: {
-    type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
+    type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
     options?: { label: string; value: string }[];
     label?: string;
     allowEmpty?: boolean;
