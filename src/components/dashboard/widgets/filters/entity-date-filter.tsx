@@ -21,7 +21,8 @@ export function EntityDateFilter({
       allowEmpty={allowEmpty}
       referenceDate={referenceDate}
       translationNamespace="dashboard.customizer.historyTable"
-      variant="compact"
+      variant="stacked"
+      size="sm"
     />
   );
 }

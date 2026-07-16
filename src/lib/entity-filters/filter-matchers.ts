@@ -1,41 +1,110 @@
 import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
 import { resolveDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
 import { parseDateFilterValue } from '@/types/date-filter-value';
+import { parseEnumFilterValue } from '@/types/enum-filter-value';
+import { parseNumberFilterValue } from '@/types/number-filter-value';
+import { parseTextFilterValue } from '@/types/text-filter-value';
+
+function isNullishOrBlank(value: unknown): boolean {
+  if (value === null || value === undefined) {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return value.trim() === '';
+  }
+  return false;
+}
 
 export function matchesTextFilter(value: unknown, filterValue: unknown): boolean {
+  const parsed = parseTextFilterValue(filterValue);
+
+  if (parsed.operator === 'empty') {
+    return isNullishOrBlank(value);
+  }
+  if (parsed.operator === 'notEmpty') {
+    return !isNullishOrBlank(value);
+  }
+
+  if (parsed.value.trim() === '') {
+    return true;
+  }
+
   if (value === null || value === undefined) {
     return false;
   }
+
   const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-  return searchValue.includes(searchFilter);
+  const searchFilter = parsed.value.toLowerCase();
+
+  switch (parsed.operator) {
+    case 'contains':
+      return searchValue.includes(searchFilter);
+    case 'startsWith':
+      return searchValue.startsWith(searchFilter);
+    case 'endsWith':
+      return searchValue.endsWith(searchFilter);
+    case 'eq':
+      return searchValue === searchFilter;
+  }
 }
 
 export function matchesNumberRangeFilter(value: unknown, filterValue: unknown): boolean {
+  const parsed = parseNumberFilterValue(filterValue);
+
+  if (parsed.operator === 'empty') {
+    return value === null || value === undefined;
+  }
+  if (parsed.operator === 'notEmpty') {
+    return value !== null && value !== undefined;
+  }
+
+  if (
+    (parsed.operator === 'eq' ||
+      parsed.operator === 'gt' ||
+      parsed.operator === 'lt' ||
+      parsed.operator === 'gte' ||
+      parsed.operator === 'lte') &&
+    parsed.value == null
+  ) {
+    return true;
+  }
+
   if (value === null || value === undefined) {
     return false;
   }
-  if (!filterValue || (!Array.isArray(filterValue) && typeof filterValue !== 'object')) {
-    return true;
-  }
-  const range = filterValue as [number | null, number | null];
-  if (range[0] == null && range[1] == null) {
-    return true;
-  }
+
   const rowValue = Number(value);
   if (Number.isNaN(rowValue)) {
     return false;
   }
-  if (range[0] !== null && range[1] !== null) {
-    return rowValue >= range[0] && rowValue <= range[1];
+
+  switch (parsed.operator) {
+    case 'between': {
+      if (parsed.min == null && parsed.max == null) {
+        return true;
+      }
+      if (parsed.min !== null && parsed.max !== null) {
+        return rowValue >= parsed.min && rowValue <= parsed.max;
+      }
+      if (parsed.min !== null) {
+        return rowValue >= parsed.min;
+      }
+      if (parsed.max !== null) {
+        return rowValue <= parsed.max;
+      }
+      return true;
+    }
+    case 'eq':
+      return rowValue === parsed.value;
+    case 'gt':
+      return rowValue > (parsed.value as number);
+    case 'lt':
+      return rowValue < (parsed.value as number);
+    case 'gte':
+      return rowValue >= (parsed.value as number);
+    case 'lte':
+      return rowValue <= (parsed.value as number);
   }
-  if (range[0] !== null) {
-    return rowValue >= range[0];
-  }
-  if (range[1] !== null) {
-    return rowValue <= range[1];
-  }
-  return true;
 }
 
 export function matchesDateFilter(
@@ -47,6 +116,9 @@ export function matchesDateFilter(
 
   if (parsed.operator === 'empty') {
     return value === null || value === undefined;
+  }
+  if (parsed.operator === 'notEmpty') {
+    return value !== null && value !== undefined;
   }
 
   if (!value) {
@@ -76,18 +148,39 @@ export function matchesDateFilter(
   return true;
 }
 
-export function matchesSelectFilter(value: unknown, filterValue: unknown): boolean {
-  if (filterValue === '' || filterValue == null) {
+export function matchesEnumFilter(
+  value: unknown,
+  filterValue: unknown,
+  defaultOperator: 'eq' | 'in' = 'eq',
+): boolean {
+  const parsed = parseEnumFilterValue(filterValue, defaultOperator);
+
+  if (parsed.operator === 'empty') {
+    return isNullishOrBlank(value);
+  }
+  if (parsed.operator === 'notEmpty') {
+    return !isNullishOrBlank(value);
+  }
+
+  if (parsed.operator === 'eq') {
+    if (parsed.value === '') {
+      return true;
+    }
+    return String(value) === parsed.value;
+  }
+
+  if (parsed.values.length === 0) {
     return true;
   }
-  return String(value) === String(filterValue);
+  return parsed.values.includes(String(value));
+}
+
+export function matchesSelectFilter(value: unknown, filterValue: unknown): boolean {
+  return matchesEnumFilter(value, filterValue, 'eq');
 }
 
 export function matchesMultiSelectFilter(value: unknown, filterValue: unknown): boolean {
-  if (!Array.isArray(filterValue) || filterValue.length === 0) {
-    return true;
-  }
-  return filterValue.includes(String(value));
+  return matchesEnumFilter(value, filterValue, 'in');
 }
 
 export type FilterMatchOptions = {

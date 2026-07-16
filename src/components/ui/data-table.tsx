@@ -16,7 +16,11 @@ import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
-import { matchesDateFilter } from '@/lib/entity-filters/filter-matchers';
+import {
+  matchesDateFilter,
+  matchesNumberRangeFilter,
+  matchesTextFilter,
+} from '@/lib/entity-filters/filter-matchers';
 import { cn } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';
@@ -66,40 +70,12 @@ declare module '@tanstack/react-table' {
 
 // Define the custom filter function for compound text fields
 export const compoundTextFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  if (!value) return false;
-
-  // Convert both the value and filter to lowercase for case-insensitive search
-  const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-
-  return searchValue.includes(searchFilter);
+  return matchesTextFilter(row.getValue(columnId), filterValue);
 };
 
 // Define the custom number range filter function for number filtering
 export const inNumberRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  if (value === null || value === undefined) return false;
-
-  // If no filter is applied, show all rows
-  if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
-
-  // Convert the row value to a number
-  const rowValue = Number(value);
-
-  let result = true;
-  // Check if the number is within the range
-  if (filterValue[0] !== null && filterValue[1] !== null) {
-    result = rowValue >= filterValue[0] && rowValue <= filterValue[1];
-  } else if (filterValue[0] !== null) {
-    // Only min value is set
-    result = rowValue >= filterValue[0];
-  } else if (filterValue[1] !== null) {
-    // Only max value is set
-    result = rowValue <= filterValue[1];
-  }
-
-  return result;
+  return matchesNumberRangeFilter(row.getValue(columnId), filterValue);
 };
 
 // Define the custom date filter function for date range filtering

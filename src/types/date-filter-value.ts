@@ -12,11 +12,16 @@ export const DATE_FILTER_OPERATORS = [
   'next',
 ] as const;
 
-export const DATE_FILTER_LEGACY_OPERATORS = ['year', 'empty'] as const;
+export const DATE_FILTER_LEGACY_OPERATORS = ['year'] as const;
+export const DATE_FILTER_EMPTY_OPERATORS = ['empty', 'notEmpty'] as const;
 
 export type DateFilterOperator = (typeof DATE_FILTER_OPERATORS)[number];
 export type DateFilterLegacyOperator = (typeof DATE_FILTER_LEGACY_OPERATORS)[number];
-export type DateFilterOperatorWithLegacy = DateFilterOperator | DateFilterLegacyOperator;
+export type DateFilterEmptyOperator = (typeof DATE_FILTER_EMPTY_OPERATORS)[number];
+export type DateFilterOperatorWithLegacy =
+  | DateFilterOperator
+  | DateFilterLegacyOperator
+  | DateFilterEmptyOperator;
 
 export const DATE_FILTER_LAST_UNITS = ['days', 'months'] as const;
 
@@ -38,7 +43,8 @@ export type DateFilterValue =
   | FilterOperatorValue<'thisYear'>
   | FilterOperatorValue<'lastYear'>
   | FilterOperatorValue<'year', { year: number }>
-  | FilterOperatorValue<'empty'>;
+  | FilterOperatorValue<'empty'>
+  | FilterOperatorValue<'notEmpty'>;
 
 export function createDefaultDateFilterValue(): DateFilterValue {
   return {
@@ -75,6 +81,8 @@ export function createDefaultDateFilterValueForOperator(
       return { operator: 'year', year: referenceDate.getFullYear() };
     case 'empty':
       return { operator: 'empty' };
+    case 'notEmpty':
+      return { operator: 'notEmpty' };
   }
 }
 
@@ -103,7 +111,11 @@ function parseRelativeAmountFilter(
 function isDateFilterOperator(value: unknown): value is DateFilterOperatorWithLegacy {
   return (
     typeof value === 'string' &&
-    ([...DATE_FILTER_OPERATORS, ...DATE_FILTER_LEGACY_OPERATORS] as readonly string[]).includes(value)
+    ([
+      ...DATE_FILTER_OPERATORS,
+      ...DATE_FILTER_LEGACY_OPERATORS,
+      ...DATE_FILTER_EMPTY_OPERATORS,
+    ] as readonly string[]).includes(value)
   );
 }
 
@@ -152,10 +164,15 @@ export function parseDateFilterValue(raw: unknown): DateFilterValue {
     }
     case 'empty':
       return { operator: 'empty' };
+    case 'notEmpty':
+      return { operator: 'notEmpty' };
   }
 }
 
 export function isInactiveDateFilterValue(raw: unknown): boolean {
   const parsed = parseDateFilterValue(raw);
+  if (parsed.operator === 'empty' || parsed.operator === 'notEmpty') {
+    return false;
+  }
   return parsed.operator === 'between' && !parsed.start && !parsed.end;
 }

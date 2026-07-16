@@ -33,8 +33,38 @@
     "last": "Letzte…",
     "next": "Nächste…",
     "year": "Jahr",
-    "empty": "Leer"
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
   },
+  "numberFilterOperators": {
+    "between": "Von Bis",
+    "eq": "=",
+    "gt": ">",
+    "lt": "<",
+    "gte": "≥",
+    "lte": "≤",
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
+  },
+  "numberFilterMin": "Min",
+  "numberFilterMax": "Max",
+  "numberFilterValue": "Wert",
+  "textFilterOperators": {
+    "contains": "Enthält",
+    "startsWith": "Beginnt mit",
+    "endsWith": "Endet mit",
+    "eq": "=",
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
+  },
+  "textFilterValue": "Text",
+  "enumFilterOperators": {
+    "eq": "Auswahl",
+    "in": "Mehrfachauswahl",
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
+  },
+  "enumFilterSelectedCount": "{count} ausgewählt",
   "dateFilterRelative": "Letzte",
   "dateFilterStart": "Startdatum",
   "dateFilterEnd": "Enddatum",

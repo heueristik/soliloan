@@ -28,7 +28,10 @@ export function EntityFilterControl({
         <SelectFilter
           filterState={filterState}
           options={definition.options ?? []}
+          allowEmpty={definition.allowEmpty}
           onFilterChange={(v) => onChange(v)}
+          variant="stacked"
+          size="sm"
         />
       );
     case 'multi-select':
@@ -36,11 +39,22 @@ export function EntityFilterControl({
         <MultiSelectFilter
           filterState={filterState}
           options={definition.options ?? []}
+          allowEmpty={definition.allowEmpty}
           onFilterChange={(v) => onChange(v)}
+          variant="stacked"
+          size="sm"
         />
       );
     case 'number':
-      return <NumberFilter filterState={filterState} onFilterChange={(v) => onChange(v)} />;
+      return (
+        <NumberFilter
+          filterState={filterState}
+          allowEmpty={definition.allowEmpty}
+          onFilterChange={(v) => onChange(v)}
+          variant="stacked"
+          size="sm"
+        />
+      );
     case 'date':
       return (
         <EntityDateFilter
@@ -55,7 +69,10 @@ export function EntityFilterControl({
           filterState={filterState}
           label={definition.label}
           columnId="filter"
+          allowEmpty={definition.allowEmpty}
           onFilterChange={(v) => onChange(v)}
+          variant="stacked"
+          size="sm"
         />
       );
   }

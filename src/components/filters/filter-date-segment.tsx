@@ -4,7 +4,11 @@ import { de, enUS } from 'date-fns/locale';
 import { X } from 'lucide-react';
 import { useLocale } from 'next-intl';
 
-import { filterDateSegmentClass, type FilterFieldVariant } from '@/components/filters/filter-field-group';
+import {
+  filterDateSegmentClass,
+  type FilterFieldSize,
+  type FilterFieldVariant,
+} from '@/components/filters/filter-field-group';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -20,6 +24,7 @@ export function FilterDateSegment({
   onChange,
   onClear,
   variant,
+  size = 'default',
   className,
 }: {
   label: string;
@@ -27,11 +32,12 @@ export function FilterDateSegment({
   onChange: (value: string | undefined) => void;
   onClear: () => void;
   variant: FilterFieldVariant;
+  size?: FilterFieldSize;
   className?: string;
 }) {
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
-  const formatDateValue = variant === 'compact' ? formatDateShort : formatDateLong;
+  const formatDateValue = size === 'sm' || variant === 'stacked' ? formatDateShort : formatDateLong;
 
   return (
     <Popover>
@@ -39,8 +45,8 @@ export function FilterDateSegment({
         <Button
           type="button"
           variant="outline"
-          size={variant === 'compact' ? 'sm' : 'default'}
-          className={cn(filterDateSegmentClass(variant), !value && 'text-muted-foreground', className)}
+          size={size === 'sm' ? 'sm' : 'default'}
+          className={cn(filterDateSegmentClass(variant, size), !value && 'text-muted-foreground', className)}
         >
           {value ? (
             <div className="flex min-w-0 w-full items-center justify-between gap-1">

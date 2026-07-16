@@ -20,6 +20,7 @@ export function resolveDateFilterBounds(
 
   switch (parsed.operator) {
     case 'empty':
+    case 'notEmpty':
       return null;
     case 'between': {
       if (!parsed.start && !parsed.end) {

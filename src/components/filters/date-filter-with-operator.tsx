@@ -6,9 +6,11 @@ import { useMemo } from 'react';
 import { FilterDateSegment } from '@/components/filters/filter-date-segment';
 import {
   FilterFieldGroup,
+  FilterStackedFields,
   filterInputSegmentClass,
   filterOperatorSegmentClass,
   filterUnitSegmentClass,
+  type FilterFieldSize,
   type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
 import { Input } from '@/components/ui/input';
@@ -16,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { StatDeltaUnit } from '@/types/dashboard-widgets/stat-widget';
 import {
   createDefaultDateFilterValueForOperator,
+  DATE_FILTER_EMPTY_OPERATORS,
   DATE_FILTER_LAST_UNITS,
   DATE_FILTER_LEGACY_OPERATORS,
   DATE_FILTER_OPERATORS,
@@ -31,22 +34,24 @@ function OperatorSelect({
   onChange,
   availableOperators,
   operatorLabel,
-  variant,
+  size,
+  fullWidth = false,
 }: {
   value: DateFilterOperatorWithLegacy;
   onChange: (operator: DateFilterOperatorWithLegacy) => void;
   availableOperators: DateFilterOperatorWithLegacy[];
   operatorLabel: (operator: DateFilterOperatorWithLegacy) => string;
-  variant: FilterFieldVariant;
+  size: FilterFieldSize;
+  fullWidth?: boolean;
 }) {
   return (
     <Select value={value} onValueChange={(op) => onChange(op as DateFilterOperatorWithLegacy)}>
-      <SelectTrigger className={filterOperatorSegmentClass(variant)}>
+      <SelectTrigger className={filterOperatorSegmentClass(size, fullWidth)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {availableOperators.map((operator) => (
-          <SelectItem key={operator} value={operator}>
+          <SelectItem key={operator} value={operator} className={size === 'sm' ? 'text-xs' : undefined}>
             {operatorLabel(operator)}
           </SelectItem>
         ))}
@@ -58,12 +63,12 @@ function OperatorSelect({
 function RelativeDateAmountFields({
   value,
   onChange,
-  variant,
+  size,
   unitOptions,
 }: {
   value: DateFilterRelativeAmountValue;
   onChange: (value: DateFilterRelativeAmountValue) => void;
-  variant: FilterFieldVariant;
+  size: FilterFieldSize;
   unitOptions: { value: StatDeltaUnit; label: string }[];
 }) {
   return (
@@ -79,7 +84,7 @@ function RelativeDateAmountFields({
             unit: value.unit,
           });
         }}
-        className={filterInputSegmentClass(variant, 'amount')}
+        className={filterInputSegmentClass(size, 'amount')}
       />
       <Select
         value={value.unit}
@@ -90,12 +95,12 @@ function RelativeDateAmountFields({
           })
         }
       >
-        <SelectTrigger className={filterUnitSegmentClass(variant)}>
+        <SelectTrigger className={filterUnitSegmentClass(size)}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {unitOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem key={option.value} value={option.value} className={size === 'sm' ? 'text-xs' : undefined}>
               {option.label}
             </SelectItem>
           ))}
@@ -109,6 +114,7 @@ function DateFilterPayload({
   parsed,
   onChange,
   variant,
+  size,
   refDate,
   t,
   unitOptions,
@@ -116,6 +122,7 @@ function DateFilterPayload({
   parsed: DateFilterValue;
   onChange: (value: DateFilterValue) => void;
   variant: FilterFieldVariant;
+  size: FilterFieldSize;
   refDate: Date;
   t: ReturnType<typeof useTranslations>;
   unitOptions: { value: StatDeltaUnit; label: string }[];
@@ -128,6 +135,7 @@ function DateFilterPayload({
             label={t('dateFilterStart')}
             value={parsed.start}
             variant={variant}
+            size={size}
             onChange={(start) =>
               onChange({
                 operator: 'between',
@@ -147,6 +155,7 @@ function DateFilterPayload({
             label={t('dateFilterEnd')}
             value={parsed.end}
             variant={variant}
+            size={size}
             onChange={(end) =>
               onChange({
                 operator: 'between',
@@ -178,7 +187,7 @@ function DateFilterPayload({
               unit,
             })
           }
-          variant={variant}
+          size={size}
           unitOptions={unitOptions}
         />
       );
@@ -195,7 +204,7 @@ function DateFilterPayload({
             const year = raw === '' ? refDate.getFullYear() : Number.parseInt(raw, 10) || refDate.getFullYear();
             onChange({ operator: 'year', year });
           }}
-          className={filterInputSegmentClass(variant, 'year')}
+          className={filterInputSegmentClass(size, 'year')}
         />
       );
     default:
@@ -220,7 +229,8 @@ export function DateFilterWithOperator({
   allowEmpty = false,
   referenceDate,
   translationNamespace = 'dataTable',
-  variant = 'default',
+  variant = 'row',
+  size = 'default',
 }: {
   value: unknown;
   onChange: (value: DateFilterValue) => void;
@@ -228,6 +238,7 @@ export function DateFilterWithOperator({
   referenceDate?: Date;
   translationNamespace?: string;
   variant?: FilterFieldVariant;
+  size?: FilterFieldSize;
 }) {
   const t = useTranslations(translationNamespace);
   const tStat = useTranslations('dashboard.customizer.stat');
@@ -236,9 +247,12 @@ export function DateFilterWithOperator({
   const parsed = useMemo(() => parseDateFilterValue(value), [value]);
 
   const availableOperators = useMemo(() => {
-    const legacy = allowEmpty ? DATE_FILTER_LEGACY_OPERATORS.filter((op) => op === 'empty') : [];
-    return [...DATE_FILTER_OPERATORS, ...legacy];
-  }, [allowEmpty]);
+    const emptyOps = allowEmpty ? [...DATE_FILTER_EMPTY_OPERATORS] : [];
+    // Keep year parseable but only offer it when already selected (legacy values).
+    const legacy =
+      parsed.operator === 'year' ? DATE_FILTER_LEGACY_OPERATORS.filter((op) => op === 'year') : [];
+    return [...DATE_FILTER_OPERATORS, ...legacy, ...emptyOps];
+  }, [allowEmpty, parsed.operator]);
 
   const unitOptions = useMemo(
     () =>
@@ -258,7 +272,7 @@ export function DateFilterWithOperator({
 
   const operatorLabel = (operator: DateFilterOperatorWithLegacy) => t(`dateFilterOperators.${operator}`);
   const showPayload = hasPayload(parsed.operator);
-  const useVerticalLayout = variant === 'compact' && showPayload;
+  const useStackedLayout = variant === 'stacked' && showPayload;
 
   const operatorSelect = (
     <OperatorSelect
@@ -266,7 +280,8 @@ export function DateFilterWithOperator({
       onChange={setOperator}
       availableOperators={availableOperators}
       operatorLabel={operatorLabel}
-      variant={variant}
+      size={size}
+      fullWidth={useStackedLayout}
     />
   );
 
@@ -275,19 +290,15 @@ export function DateFilterWithOperator({
       parsed={parsed}
       onChange={onChange}
       variant={variant}
+      size={size}
       refDate={refDate}
       t={t}
       unitOptions={unitOptions}
     />
   ) : null;
 
-  if (useVerticalLayout) {
-    return (
-      <FilterFieldGroup orientation="vertical">
-        {operatorSelect}
-        <FilterFieldGroup className="min-w-0">{payload}</FilterFieldGroup>
-      </FilterFieldGroup>
-    );
+  if (useStackedLayout) {
+    return <FilterStackedFields operator={operatorSelect} payload={payload} />;
   }
 
   return (
