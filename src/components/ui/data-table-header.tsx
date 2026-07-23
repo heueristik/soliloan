@@ -367,8 +367,11 @@ function ColumnVisibilityMenu<TData>({ table, columnFilters }: ColumnVisibilityM
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const resolveColumnLabel = (columnId: string, exportLabel?: string) =>
-    columnFilters[columnId]?.label ?? exportLabel ?? columnId;
+  const resolveColumnLabel = (column: ReturnType<Table<TData>['getAllColumns']>[number]) =>
+    columnFilters[column.id]?.label ??
+    column.columnDef.meta?.labelLong ??
+    column.columnDef.meta?.export?.label ??
+    column.id;
 
   const groupedHideableColumns = useMemo(() => {
     const hideableColumns = table.getAllColumns().filter((column) => column.getCanHide());
@@ -403,7 +406,10 @@ function ColumnVisibilityMenu<TData>({ table, columnFilters }: ColumnVisibilityM
 
     const matches = (column: (typeof groupedHideableColumns.flatColumns)[number]) => {
       const label =
-        columnFilters[column.id]?.label ?? column.columnDef.meta?.export?.label ?? column.id;
+        columnFilters[column.id]?.label ??
+        column.columnDef.meta?.labelLong ??
+        column.columnDef.meta?.export?.label ??
+        column.id;
       return label.toLowerCase().includes(query);
     };
 
@@ -453,7 +459,7 @@ function ColumnVisibilityMenu<TData>({ table, columnFilters }: ColumnVisibilityM
                   onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   onSelect={(event) => event.preventDefault()}
                 >
-                  {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
+                  {resolveColumnLabel(column)}
                 </DropdownMenuCheckboxItem>
               ))}
               {filteredColumns.flatColumns.length > 0 && filteredColumns.groupedColumns.length > 0 && (
@@ -469,7 +475,7 @@ function ColumnVisibilityMenu<TData>({ table, columnFilters }: ColumnVisibilityM
                       onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       onSelect={(event) => event.preventDefault()}
                     >
-                      {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
+                      {resolveColumnLabel(column)}
                     </DropdownMenuCheckboxItem>
                   ))}
                   {groupIndex < filteredColumns.groupedColumns.length - 1 && <DropdownMenuSeparator />}

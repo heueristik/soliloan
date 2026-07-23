@@ -5,11 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { dateRangeFilter } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import {
-  matchesBooleanFilter,
-  matchesEnumFilter,
-  matchesTextFilter,
-} from '@/lib/entity-filters/filter-matchers';
+import { matchesBooleanFilter, matchesEnumFilter, matchesTextFilter } from '@/lib/entity-filters/filter-matchers';
 import { formatDurationDays } from '@/lib/format-duration';
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
@@ -39,12 +35,37 @@ export function accessorKeyToColumnId(accessorKey: string): string {
   return accessorKey.replaceAll('.', '_');
 }
 
+type TranslateFn = ((key: string) => string) & { has?: (key: string) => boolean };
+
 type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string;
+  /** Translation key for the long column name (filters, export, column menu). */
   header?: string | undefined;
+  /** Optional translation key for the short header label. Defaults to `${header}Short` when present. */
+  headerShort?: string | undefined;
+  /** Optional translation key for the column description. Defaults to `${header}Description` when present. */
+  headerDescription?: string | undefined;
   id?: string | undefined;
   align?: 'left' | 'right' | 'center';
 };
+
+function resolveOptionalTranslation(t: TranslateFn, key: string | undefined): string | undefined {
+  if (!key) return undefined;
+  if (t.has && !t.has(key)) return undefined;
+  return t(key);
+}
+
+function resolveColumnLabels(
+  t: TranslateFn,
+  headerKey: string | undefined,
+  options?: { headerShort?: string; headerDescription?: string },
+): { shortName?: string; longName?: string; description?: string } {
+  if (!headerKey) return {};
+  const longName = t(headerKey);
+  const shortName = resolveOptionalTranslation(t, options?.headerShort ?? `${headerKey}Short`) ?? longName;
+  const description = resolveOptionalTranslation(t, options?.headerDescription ?? `${headerKey}Description`);
+  return { shortName, longName, description };
+}
 
 function mergeExportMeta<T>(
   column: ColumnDef<T>,
@@ -68,11 +89,19 @@ function mergeExportMeta<T>(
 }
 
 // Create a basic column definition
-export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => string): ColumnDef<T> {
+export function createColumn<T>(config: ColumnConfig<T>, t: TranslateFn): ColumnDef<T> {
+  const { headerShort, headerDescription, header, ...restConfig } = config;
+  const { shortName, longName, description } = resolveColumnLabels(t, header, {
+    headerShort,
+    headerDescription,
+  });
+
   const column = {
-    ...config,
+    ...restConfig,
     header: ({ column }) =>
-      config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
+      shortName ? (
+        <DataTableColumnHeader column={column} title={shortName} longTitle={longName} description={description} />
+      ) : undefined,
     filterFn: config.filterFn || compoundTextFilter,
     sortingFn:
       config.sortingFn ||
@@ -86,13 +115,16 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
       }),
     meta: {
       ...config.meta,
+      labelShort: shortName,
+      labelLong: longName,
+      description,
       style: {
         textAlign: config.align ?? 'left',
         ...config.meta?.style,
       },
       export: {
         type: 'text' as const,
-        label: config.header ? t(config.header) : config.meta?.export?.label,
+        label: longName ?? config.meta?.export?.label,
         ...config.meta?.export,
       },
     },
@@ -780,7 +812,7 @@ export function createAdditionalFieldsColumns<T>(
       return mergeExportMeta(
         {
           ...createDateColumn<T>(fieldKey, undefined, t, locale),
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
           id: fieldKey,
         } as ColumnDef<T>,
         { label: field.name },
@@ -792,7 +824,7 @@ export function createAdditionalFieldsColumns<T>(
         return mergeExportMeta(
           {
             ...createCurrencyColumn<T>(fieldKey, undefined, t, locale),
-            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
             id: fieldKey,
           } as ColumnDef<T>,
           { label: field.name },
@@ -802,7 +834,7 @@ export function createAdditionalFieldsColumns<T>(
         return mergeExportMeta(
           {
             ...createPercentageColumn<T>(fieldKey, undefined, t, locale),
-            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
             id: fieldKey,
           } as ColumnDef<T>,
           { label: field.name },
@@ -811,7 +843,7 @@ export function createAdditionalFieldsColumns<T>(
       return mergeExportMeta(
         {
           ...createNumberColumn<T>(fieldKey, undefined, t, locale, { integer: false }),
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
           id: fieldKey,
         } as ColumnDef<T>,
         { label: field.name },
@@ -834,7 +866,7 @@ export function createAdditionalFieldsColumns<T>(
             t,
           ),
           id: fieldKey,
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
         } as ColumnDef<T>,
         { label: field.name },
       );
@@ -850,7 +882,7 @@ export function createAdditionalFieldsColumns<T>(
           },
           t,
         ),
-        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
       } as ColumnDef<T>,
       { label: field.name },
     );

@@ -65,6 +65,12 @@ declare module '@tanstack/react-table' {
     bulkSelectColumn?: boolean;
     export?: ColumnExportMeta;
     columnGroup?: ColumnGroupMeta;
+    /** Short label shown in the table header. */
+    labelShort?: string;
+    /** Long label shown in the column menu, filters, and export. */
+    labelLong?: string;
+    /** Optional explanation shown in the column menu. */
+    description?: string;
   }
 }
 
