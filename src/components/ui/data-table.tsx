@@ -22,6 +22,7 @@ import {
   matchesTextFilter,
 } from '@/lib/entity-filters/filter-matchers';
 import { cn } from '@/lib/utils';
+import type { NumberFilterOperator } from '@/types/number-filter-value';
 
 import { Checkbox } from './checkbox';
 import { DataTableBody } from './data-table-body';
@@ -96,6 +97,7 @@ export type DataTableColumnFilters = {
     options?: { label: string; value: string }[];
     label?: string;
     allowEmpty?: boolean;
+    defaultOperator?: NumberFilterOperator;
   };
 };
 

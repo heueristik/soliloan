@@ -352,32 +352,31 @@ export function createDateColumn<T>(
   t: (key: string) => string,
   locale?: string,
 ): ColumnDef<T> {
-  return mergeExportMeta(
-    createColumn<T>(
-      {
-        accessorKey,
-        header: headerKey,
-        cell: ({ row }) => {
-          const dateStr = row.getValue(accessorKey) as string;
-          if (!dateStr) return '';
-          try {
-            const date = new Date(dateStr);
-            return Number.isNaN(date.getTime())
-              ? ''
-              : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                });
-          } catch (_) {
-            return '';
-          }
-        },
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      cell: ({ row }) => {
+        const dateStr = row.getValue(accessorKey) as string;
+        if (!dateStr) return '';
+        try {
+          const date = new Date(dateStr);
+          return Number.isNaN(date.getTime())
+            ? ''
+            : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              });
+        } catch (_) {
+          return '';
+        }
       },
-      t,
-    ),
-    { type: 'date' },
+    },
+    t,
   );
+  column.filterFn = dateRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, { type: 'date' });
 }
 
 type OutstandingDepositSinceDateRow = {

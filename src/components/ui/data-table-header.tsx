@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
+import type { NumberFilterOperator } from '@/types/number-filter-value';
 import { DataTableColumnFilters } from './data-table-column-filters';
 import { DataTableExportDialog } from './data-table-export-dialog';
 import { SaveViewDialog } from './save-view-dialog';
@@ -36,6 +37,7 @@ type ColumnFiltersConfig = {
     options?: { label: string; value: string }[];
     label?: string;
     allowEmpty?: boolean;
+    defaultOperator?: NumberFilterOperator;
   };
 };
 
