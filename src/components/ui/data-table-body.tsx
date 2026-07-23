@@ -68,7 +68,6 @@ export function DataTableBody<TData>({
                           ),
                         header.column.columnDef.meta?.actionsColumn &&
                           'w-9 min-w-[2.25rem] max-w-[2.25rem] !p-0 text-center align-middle',
-                        'overflow-visible',
                       )}
                     >
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
