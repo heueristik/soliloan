@@ -383,53 +383,6 @@ export function createDateColumn<T>(
   return mergeExportMeta(column, { type: 'date' });
 }
 
-type OutstandingDepositSinceDateRow = {
-  outstandingDepositSinceDays: number | null;
-};
-
-export function createOutstandingDepositSinceDateColumn<T extends OutstandingDepositSinceDateRow>(
-  accessorKey: string,
-  headerKey: string | undefined,
-  t: (key: string) => string,
-  locale: string | undefined,
-  durationT: (key: string, values?: Record<string, number>) => string,
-  sinceHintT: (key: string, values?: Record<string, string>) => string,
-): ColumnDef<T> {
-  const column = createColumn<T>(
-    {
-      accessorKey,
-      header: headerKey,
-      cell: ({ row }) => {
-        const dateStr = row.getValue(accessorKey) as string;
-        if (!dateStr) return '';
-        try {
-          const date = new Date(dateStr);
-          if (Number.isNaN(date.getTime())) {
-            return '';
-          }
-          const formattedDate = date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          });
-          const days = row.original.outstandingDepositSinceDays;
-          if (days == null) {
-            return formattedDate;
-          }
-          const duration = durationT('sinceDays', { count: Math.round(days) });
-          return `${formattedDate}${sinceHintT('table.outstandingDepositSinceHint', { duration })}`;
-        } catch (_) {
-          return '';
-        }
-      },
-    },
-    t,
-  );
-
-  column.filterFn = dateRangeFilter as ColumnDef<T>['filterFn'];
-  return mergeExportMeta(column, { type: 'date' });
-}
-
 type PercentageColumnFormattingOptions = {
   align?: 'left' | 'right' | 'center';
 };
@@ -500,13 +453,16 @@ export function createEnumBadgeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string,
   getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
+  options?: { align?: 'left' | 'right' | 'center' },
 ): ColumnDef<T> {
   const columnId = accessorKeyToColumnId(accessorKey);
+  const align = options?.align ?? 'left';
   const column = createColumn<T>(
     {
       accessorKey,
       id: columnId,
       header: headerKey,
+      align,
       cell: ({ row }) => {
         const value = row.getValue(columnId) as string;
         if (!value) return '';
@@ -520,7 +476,13 @@ export function createEnumBadgeColumn<T>(
           variant = getBadgeVariant(value);
         }
 
-        return <Badge variant={variant}>{enumText}</Badge>;
+        return (
+          <div className={`${getTextAlignClass(align)} whitespace-nowrap`}>
+            <Badge variant={variant} className="whitespace-nowrap">
+              {enumText}
+            </Badge>
+          </div>
+        );
       },
       filterFn: enumFilter,
       sortingFn: (rowA, rowB, columnId) => {
@@ -555,14 +517,19 @@ export function createBooleanColumn<T>(
   headerKey: string,
   t: (key: string) => string,
   commonT: (key: string) => string,
+  options?: { align?: 'left' | 'right' | 'center' },
 ): ColumnDef<T> {
   const formatBoolean = (value: unknown) => (value === true ? commonT('ui.boolean.yes') : commonT('ui.boolean.no'));
+  const align = options?.align ?? 'left';
 
   const column = createColumn<T>(
     {
       accessorKey,
       header: headerKey,
-      cell: ({ row }) => formatBoolean(row.getValue(accessorKey)),
+      align,
+      cell: ({ row }) => (
+        <div className={getTextAlignClass(align)}>{formatBoolean(row.getValue(accessorKey))}</div>
+      ),
       filterFn: booleanFilter,
       sortingFn: (rowA, rowB, columnId) => {
         const a = rowA.getValue(columnId) === true ? 1 : 0;
