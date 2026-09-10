@@ -1,5 +1,5 @@
 {
-  "name": "soliloan-ai",
+  "name": "soliloan",
   "version": "0.1.5",
   "private": true,
   "prisma": {
