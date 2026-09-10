@@ -103,6 +103,51 @@ export function mapTerminationPeriodType(
   }
 }
 
+function resolveLegacyPeriod(period: number | null, defaultPeriod: number | null): number | null {
+  const value = period || defaultPeriod;
+  return value ? Math.round(value) : null;
+}
+
+type LoanPeriodFields = {
+  terminationPeriod: number | null;
+  terminationPeriodType: DurationType | null;
+  duration: number | null;
+  durationType: DurationType | null;
+};
+
+/** Legacy dkp-v1 stores period on termination_period for T, D and P. Map onto the matching Loan fields. */
+export function mapLoanPeriodFields(
+  terminationType: TerminationType,
+  period: number | null,
+  periodType: string | null,
+  defaultPeriod: number | null,
+  defaultPeriodType: string | null,
+  warnings: MigrationWarning[],
+  legacyId: number,
+): LoanPeriodFields {
+  const resolvedPeriod = resolveLegacyPeriod(period, defaultPeriod);
+  const resolvedPeriodType = mapTerminationPeriodType(periodType ?? defaultPeriodType, warnings, legacyId);
+
+  const fields: LoanPeriodFields = {
+    terminationPeriod: null,
+    terminationPeriodType: null,
+    duration: null,
+    durationType: null,
+  };
+
+  if (terminationType === TerminationType.DURATION) {
+    fields.duration = resolvedPeriod;
+    fields.durationType = resolvedPeriodType;
+  }
+
+  if (terminationType === TerminationType.TERMINATION) {
+    fields.terminationPeriod = resolvedPeriod;
+    fields.terminationPeriodType = resolvedPeriodType;
+  }
+
+  return fields;
+}
+
 const INTEREST_METHOD_MAP: Record<string, InterestMethod> = {
   '365_compound': InterestMethod.ACT_365_COMPOUND,
   '365_nocompound': InterestMethod.ACT_365_NOCOMPOUND,
