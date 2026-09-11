@@ -25,7 +25,7 @@ export async function findFaqArticleBySlug(
   return article;
 }
 
-export async function nextFaqArticlePosition(categoryId: string): Promise<number> {
+export async function nextFaqArticlePosition(categoryId: string | null): Promise<number> {
   const aggregate = await db.faqArticle.aggregate({
     where: { categoryId },
     _max: { position: true },

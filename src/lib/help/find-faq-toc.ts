@@ -20,7 +20,7 @@ function toTocArticle(article: {
   position: number;
   published: boolean;
   searchText: string;
-  categoryId: string;
+  categoryId: string | null;
 }): FaqTocArticle {
   return article;
 }
@@ -28,18 +28,26 @@ function toTocArticle(article: {
 export const findFaqToc = cache(async (includeUnpublished: boolean): Promise<FaqToc> => {
   const publishedFilter = includeUnpublished ? undefined : { published: true };
 
-  const categories = await db.faqCategory.findMany({
-    orderBy: { position: 'asc' },
-    include: {
-      articles: {
-        where: publishedFilter,
-        orderBy: { position: 'asc' },
-        select: articleSelect,
+  const [uncategorized, categories] = await Promise.all([
+    db.faqArticle.findMany({
+      where: { categoryId: null, ...publishedFilter },
+      orderBy: { position: 'asc' },
+      select: articleSelect,
+    }),
+    db.faqCategory.findMany({
+      orderBy: { position: 'asc' },
+      include: {
+        articles: {
+          where: publishedFilter,
+          orderBy: { position: 'asc' },
+          select: articleSelect,
+        },
       },
-    },
-  });
+    }),
+  ]);
 
   return {
+    uncategorized: uncategorized.map(toTocArticle),
     categories: categories.map((category) => ({
       id: category.id,
       name: category.name,

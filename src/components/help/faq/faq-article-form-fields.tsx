@@ -40,6 +40,7 @@ export function FaqArticleFormFields({ categories, pickerArticles, labels }: Faq
         label={labels.category}
         placeholder={labels.categoryPlaceholder}
         options={categories.map((category) => ({ value: category.id, label: category.name }))}
+        clearable
       />
       <FormSwitch name="published" label={labels.published} hint={labels.publishedHint} labelPlacement="inline" />
       <FormFieldWrapper

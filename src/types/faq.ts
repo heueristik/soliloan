@@ -5,7 +5,7 @@ export type FaqTocArticle = {
   position: number;
   published: boolean;
   searchText: string;
-  categoryId: string;
+  categoryId: string | null;
 };
 
 export type FaqTocCategory = {
@@ -17,6 +17,7 @@ export type FaqTocCategory = {
 };
 
 export type FaqToc = {
+  uncategorized: FaqTocArticle[];
   categories: FaqTocCategory[];
 };
 
@@ -27,11 +28,11 @@ export type FaqArticleRecord = {
   body: unknown;
   published: boolean;
   position: number;
-  categoryId: string;
+  categoryId: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
 export function flattenFaqTocArticles(toc: FaqToc): FaqTocArticle[] {
-  return toc.categories.flatMap((category) => category.articles);
+  return [...toc.uncategorized, ...toc.categories.flatMap((category) => category.articles)];
 }

@@ -27,14 +27,12 @@ export function FaqShell({ toc, isAdmin, children }: FaqShellProps) {
         {isAdmin ? (
           <div className="flex flex-wrap gap-2">
             <FaqCategoryDialog categories={toc.categories} />
-            {toc.categories.length > 0 ? (
-              <Button asChild size="sm">
-                <Link href="/help/faq/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('newArticle')}
-                </Link>
-              </Button>
-            ) : null}
+            <Button asChild size="sm">
+              <Link href="/help/faq/new">
+                <Plus className="mr-2 h-4 w-4" />
+                {t('newArticle')}
+              </Link>
+            </Button>
           </div>
         ) : null}
       </div>

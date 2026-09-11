@@ -43,7 +43,7 @@ export function FaqArticleForm({ initialData, categories, pickerArticles, onCanc
     defaultValues: {
       title: initialData?.title ?? '',
       slug: initialData?.slug ?? '',
-      categoryId: initialData?.categoryId ?? (categories.length === 1 ? categories[0].id : ''),
+      categoryId: initialData?.categoryId ?? null,
       published: initialData?.published ?? false,
       body: initialData?.body ?? EMPTY_FAQ_DOC,
     },
@@ -96,7 +96,6 @@ export function FaqArticleForm({ initialData, categories, pickerArticles, onCanc
         }}
       >
         {error ? <p className="mb-4 text-sm text-destructive">{error}</p> : null}
-        {categories.length === 0 ? <p className="mb-4 text-sm text-muted-foreground">{t('needsCategory')}</p> : null}
         <FaqArticleFormFields
           categories={categories}
           pickerArticles={pickerArticles}

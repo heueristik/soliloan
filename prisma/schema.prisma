@@ -354,8 +354,8 @@ model FaqArticle {
   searchText  String       @default("")
   published   Boolean      @default(false)
   position    Int
-  categoryId  String
-  category    FaqCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId  String?
+  category    FaqCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdById String
   createdBy   User         @relation(fields: [createdById], references: [id])
   createdAt   DateTime     @default(now())

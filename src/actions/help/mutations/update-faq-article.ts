@@ -37,20 +37,23 @@ export const updateFaqArticleAction = adminAction
       throw error;
     }
 
-    const category = await db.faqCategory.findUnique({
-      where: { id: parsedInput.categoryId },
-      select: { id: true },
-    });
-    if (!category) {
-      throw new Error('error.faq.categoryNotFound');
+    const categoryId = parsedInput.categoryId;
+    if (categoryId) {
+      const category = await db.faqCategory.findUnique({
+        where: { id: categoryId },
+        select: { id: true },
+      });
+      if (!category) {
+        throw new Error('error.faq.categoryNotFound');
+      }
     }
 
     const body = sanitizeFaqBody(parsedInput.body);
     const previousMediaIds = extractFaqMediaIds(sanitizeFaqBody(existing.body as JSONContent));
     const nextMediaIds = new Set(extractFaqMediaIds(body));
     const removedMediaIds = previousMediaIds.filter((id) => !nextMediaIds.has(id));
-    const categoryChanged = existing.categoryId !== parsedInput.categoryId;
-    const position = categoryChanged ? await nextFaqArticlePosition(parsedInput.categoryId) : undefined;
+    const categoryChanged = existing.categoryId !== categoryId;
+    const position = categoryChanged ? await nextFaqArticlePosition(categoryId) : undefined;
 
     await db.faqArticle.update({
       where: { id: existing.id },
@@ -61,7 +64,7 @@ export const updateFaqArticleAction = adminAction
         searchText: extractFaqSearchText(body),
         published: parsedInput.published,
         ...(position !== undefined ? { position } : {}),
-        category: { connect: { id: parsedInput.categoryId } },
+        category: categoryId ? { connect: { id: categoryId } } : { disconnect: true },
       },
     });
 

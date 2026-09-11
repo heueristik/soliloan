@@ -27,13 +27,10 @@ const requiredTitle = z.preprocess(
 export const faqArticleFormSchema = z.object({
   title: requiredTitle,
   slug: requiredSlug,
-  categoryId: z.preprocess(
-    (value) => {
-      if (value === '' || value === 'clear' || value == null) return '';
-      return value;
-    },
-    z.string().min(1, { message: 'validation.common.required' }),
-  ),
+  categoryId: z.preprocess((value) => {
+    if (value === '' || value === 'clear' || value == null) return null;
+    return value;
+  }, z.string().min(1).nullable()),
   published: z.boolean(),
   body: z.unknown().default(EMPTY_FAQ_DOC),
 });
@@ -55,7 +52,7 @@ export const faqReorderSchema = z.object({
   categoryIds: z.array(z.string()),
   groups: z.array(
     z.object({
-      categoryId: z.string().min(1),
+      categoryId: z.string().min(1).nullable(),
       articleIds: z.array(z.string()),
     }),
   ),

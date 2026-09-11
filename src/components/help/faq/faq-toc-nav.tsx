@@ -27,6 +27,13 @@ function matchesQuery(article: FaqTocArticle, query: string) {
   return haystack.includes(query);
 }
 
+function moveArticles(articles: FaqTocArticle[], activeId: string, overId: string) {
+  const oldIndex = articles.findIndex((article) => `article:${article.id}` === activeId);
+  const newIndex = articles.findIndex((article) => `article:${article.id}` === overId);
+  if (oldIndex < 0 || newIndex < 0) return null;
+  return arrayMove(articles, oldIndex, newIndex);
+}
+
 function SortableItem({ id, disabled, children }: { id: string; disabled: boolean; children: ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
@@ -71,6 +78,7 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
   const normalizedQuery = query.trim().toLowerCase();
 
   const filtered = useMemo(() => {
+    const uncategorized = localToc.uncategorized.filter((article) => matchesQuery(article, normalizedQuery));
     const categories = localToc.categories
       .map((category) => ({
         ...category,
@@ -81,17 +89,20 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
           category.articles.length > 0 ||
           (!normalizedQuery ? true : category.name.toLowerCase().includes(normalizedQuery)),
       );
-    return { categories };
+    return { uncategorized, categories };
   }, [localToc, normalizedQuery]);
 
   const persistOrder = async (next: FaqToc) => {
     setLocalToc(next);
     const result = await reorder({
       categoryIds: next.categories.map((category) => category.id),
-      groups: next.categories.map((category) => ({
-        categoryId: category.id,
-        articleIds: category.articles.map((article) => article.id),
-      })),
+      groups: [
+        { categoryId: null, articleIds: next.uncategorized.map((article) => article.id) },
+        ...next.categories.map((category) => ({
+          categoryId: category.id,
+          articleIds: category.articles.map((article) => article.id),
+        })),
+      ],
     });
     if (result?.serverError) {
       toast.error(t('reorderError'));
@@ -119,23 +130,24 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
     }
 
     if (activeId.startsWith('article:') && overId.startsWith('article:')) {
-      const moveIn = (articles: FaqTocArticle[]) => {
-        const oldIndex = articles.findIndex((article) => `article:${article.id}` === activeId);
-        const newIndex = articles.findIndex((article) => `article:${article.id}` === overId);
-        if (oldIndex < 0 || newIndex < 0) return null;
-        return arrayMove(articles, oldIndex, newIndex);
-      };
+      const uncategorized = moveArticles(localToc.uncategorized, activeId, overId);
+      if (uncategorized) {
+        void persistOrder({ ...localToc, uncategorized });
+        return;
+      }
 
       const nextCategories = localToc.categories.map((category) => {
-        const moved = moveIn(category.articles);
+        const moved = moveArticles(category.articles, activeId, overId);
         return moved ? { ...category, articles: moved } : category;
       });
       void persistOrder({ ...localToc, categories: nextCategories });
     }
   };
 
-  const isEmptyToc = localToc.categories.length === 0;
-  const hasAny = filtered.categories.some((category) => category.articles.length > 0 || !normalizedQuery);
+  const isEmptyToc = localToc.uncategorized.length === 0 && localToc.categories.length === 0;
+  const hasAny =
+    filtered.uncategorized.length > 0 ||
+    filtered.categories.some((category) => category.articles.length > 0 || !normalizedQuery);
 
   return (
     <aside className="flex w-full shrink-0 flex-col gap-3 overflow-y-auto border-b p-4 md:w-64 md:border-b-0 md:border-r">
@@ -149,6 +161,14 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <nav className="space-y-4 text-sm">
+            {filtered.uncategorized.length > 0 ? (
+              <ArticleList
+                articles={filtered.uncategorized}
+                activeSlug={activeSlug}
+                isAdmin={isAdmin}
+                canDrag={isAdmin && !normalizedQuery}
+              />
+            ) : null}
             <SortableContext
               items={filtered.categories.map((category) => `category:${category.id}`)}
               strategy={verticalListSortingStrategy}
@@ -210,6 +230,31 @@ function ArticleLink({
   );
 }
 
+function ArticleList({
+  articles,
+  activeSlug,
+  isAdmin,
+  canDrag,
+}: {
+  articles: FaqTocArticle[];
+  activeSlug?: string;
+  isAdmin: boolean;
+  canDrag: boolean;
+}) {
+  return (
+    <div className="space-y-1">
+      <SortableContext
+        items={articles.map((article) => `article:${article.id}`)}
+        strategy={verticalListSortingStrategy}
+      >
+        {articles.map((article) => (
+          <ArticleLink key={article.id} article={article} activeSlug={activeSlug} isAdmin={isAdmin} canDrag={canDrag} />
+        ))}
+      </SortableContext>
+    </div>
+  );
+}
+
 function CategoryBlock({
   category,
   activeSlug,
@@ -224,20 +269,7 @@ function CategoryBlock({
   return (
     <div className="space-y-1">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{category.name}</p>
-      <SortableContext
-        items={category.articles.map((article) => `article:${article.id}`)}
-        strategy={verticalListSortingStrategy}
-      >
-        {category.articles.map((article) => (
-          <ArticleLink
-            key={article.id}
-            article={article}
-            activeSlug={activeSlug}
-            isAdmin={isAdmin}
-            canDrag={canDragArticles}
-          />
-        ))}
-      </SortableContext>
+      <ArticleList articles={category.articles} activeSlug={activeSlug} isAdmin={isAdmin} canDrag={canDragArticles} />
     </div>
   );
 }

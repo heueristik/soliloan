@@ -22,12 +22,15 @@ export const createFaqArticleAction = adminAction
       throw error;
     }
 
-    const category = await db.faqCategory.findUnique({
-      where: { id: parsedInput.categoryId },
-      select: { id: true },
-    });
-    if (!category) {
-      throw new Error('error.faq.categoryNotFound');
+    const categoryId = parsedInput.categoryId;
+    if (categoryId) {
+      const category = await db.faqCategory.findUnique({
+        where: { id: categoryId },
+        select: { id: true },
+      });
+      if (!category) {
+        throw new Error('error.faq.categoryNotFound');
+      }
     }
 
     const body = sanitizeFaqBody(parsedInput.body);
@@ -38,9 +41,9 @@ export const createFaqArticleAction = adminAction
         body: body as Prisma.InputJsonValue,
         searchText: extractFaqSearchText(body),
         published: parsedInput.published,
-        position: await nextFaqArticlePosition(parsedInput.categoryId),
+        position: await nextFaqArticlePosition(categoryId),
         createdBy: { connect: { id: ctx.session.user.id } },
-        category: { connect: { id: parsedInput.categoryId } },
+        ...(categoryId ? { category: { connect: { id: categoryId } } } : {}),
       },
       select: { id: true, slug: true },
     });
