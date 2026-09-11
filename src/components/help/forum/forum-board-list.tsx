@@ -99,7 +99,7 @@ export function ForumBoardList({ boards, isAdmin }: ForumBoardListProps) {
                   : ` · ${t('noModerators')}`}
               </p>
             </div>
-            <div className="hidden shrink-0 text-right text-sm text-muted-foreground sm:block">
+            <div className="hidden shrink-0 self-end text-right text-sm text-muted-foreground sm:block">
               {board.lastPostedAt ? (
                 <>
                   <p>{formatForumRelativeTime(board.lastPostedAt)}</p>
