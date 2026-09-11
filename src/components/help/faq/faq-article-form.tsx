@@ -24,9 +24,10 @@ type FaqArticleFormProps = {
   categories: Pick<FaqTocCategory, 'id' | 'name'>[];
   pickerArticles: Pick<FaqTocArticle, 'title' | 'slug'>[];
   onCancel?: () => void;
+  onSaved?: () => unknown;
 };
 
-export function FaqArticleForm({ initialData, categories, pickerArticles, onCancel }: FaqArticleFormProps) {
+export function FaqArticleForm({ initialData, categories, pickerArticles, onCancel, onSaved }: FaqArticleFormProps) {
   const t = useTranslations('help.articleForm');
   const tPage = useTranslations('help.faqPage');
   const tUi = useTranslations('common.ui.actions');
@@ -73,6 +74,7 @@ export function FaqArticleForm({ initialData, categories, pickerArticles, onCanc
 
       const slug = result?.data && 'article' in result.data ? result.data.article.slug : data.slug;
       toast.success(tPage('saved'));
+      await onSaved?.();
       router.push(`/help/faq/${slug}`);
       router.refresh();
     } catch (err) {

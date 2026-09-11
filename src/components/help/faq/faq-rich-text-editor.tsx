@@ -170,6 +170,14 @@ export function FaqRichTextEditor({
         'flex min-h-[16rem] flex-col overflow-hidden rounded-md border border-border bg-background',
         className,
       )}
+      onMouseDown={(event) => {
+        if (!editor) return;
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        if (target.closest('button, input, textarea, [role="dialog"]')) return;
+        if (editor.view.dom.contains(target) && target !== editor.view.dom) return;
+        editor.chain().focus('end').run();
+      }}
     >
       <FaqEditorToolbar
         editor={editor}
@@ -177,7 +185,7 @@ export function FaqRichTextEditor({
         onSelectImageFiles={enqueueImageFiles}
         headings={headings}
       />
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} className="min-h-0 flex-1" />
       <FaqImageAltDialog
         open={Boolean(imageDialog)}
         previewSrc={imageDialog?.previewSrc ?? null}

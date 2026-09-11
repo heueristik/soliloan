@@ -4,8 +4,14 @@
 }
 
 .faq-tiptap-editor {
+  display: flex;
   cursor: text;
+  flex-direction: column;
   outline: none;
+}
+
+.faq-tiptap-editor > *:last-child {
+  flex-grow: 1;
 }
 
 .faq-tiptap-editor .tiptap,
@@ -20,7 +26,7 @@
 
 .faq-tiptap-editor h2,
 .faq-tiptap-renderer h2 {
-  margin: 1.5rem 0 0.75rem;
+  margin: 2rem 0 0.85rem;
   font-size: 1.35rem;
   font-weight: 650;
   line-height: 1.3;
@@ -28,7 +34,7 @@
 
 .faq-tiptap-editor h3,
 .faq-tiptap-renderer h3 {
-  margin: 1.25rem 0 0.5rem;
+  margin: 1.75rem 0 0.65rem;
   font-size: 1.15rem;
   font-weight: 650;
   line-height: 1.35;

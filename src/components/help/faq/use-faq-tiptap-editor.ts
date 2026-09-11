@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { rewriteFaqMediaSrcs } from '@/lib/help/faq-body';
 import { EMPTY_FAQ_DOC } from '@/lib/help/faq-constants';
 import { getFaqTiptapExtensions } from '@/lib/help/faq-tiptap-extensions';
+import { handleTiptapEmptyAreaMouseDown } from '@/lib/tiptap/handle-empty-area-mousedown';
 
 type UseFaqTiptapEditorOptions = {
   content: JSONContent;
@@ -42,6 +43,11 @@ export function useFaqTiptapEditor({
         attributes: {
           class: editorClassName,
         },
+        handleDOMEvents: editable
+          ? {
+              mousedown: handleTiptapEmptyAreaMouseDown,
+            }
+          : undefined,
         handleClick: editable
           ? undefined
           : (_view, _pos, event) => {

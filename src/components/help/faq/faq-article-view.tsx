@@ -1,6 +1,7 @@
 'use client';
 
 import type { JSONContent } from '@tiptap/core';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { parseAsBoolean, useQueryState } from 'nuqs';
@@ -8,6 +9,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteFaqArticleAction } from '@/actions/help';
+import { ActionButton } from '@/components/ui/action-button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +21,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
 import type { FaqArticleRecord, FaqTocArticle, FaqTocCategory } from '@/types/faq';
 
@@ -44,34 +45,41 @@ export function FaqArticleView({ article, isAdmin, categories, pickerArticles }:
 
   if (isAdmin && editing) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6 pb-12">
         <h1 className="text-2xl font-semibold tracking-tight">{tForm('editTitle')}</h1>
         <FaqArticleForm
           initialData={article}
           categories={categories}
           pickerArticles={pickerArticles}
           onCancel={() => void setEditing(false)}
+          onSaved={() => void setEditing(false)}
         />
       </div>
     );
   }
 
   return (
-    <article className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">{article.title}</h1>
-          {!article.published && isAdmin ? <Badge variant="secondary">{t('draft')}</Badge> : null}
-        </div>
+    <article className="pb-16">
+      <div className="mb-8 flex flex-wrap items-center gap-2 pt-1">
+        <h1 className="text-3xl font-semibold tracking-tight">{article.title}</h1>
+        {!article.published && isAdmin ? <Badge variant="secondary">{t('draft')}</Badge> : null}
         {isAdmin ? (
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => void setEditing(true)}>
-              {tUi('edit')}
-            </Button>
-            <Button type="button" variant="destructive" size="sm" onClick={() => setConfirmDelete(true)}>
-              {tUi('delete')}
-            </Button>
-          </div>
+          <>
+            <ActionButton
+              icon={<Pencil className="h-4 w-4" />}
+              tooltip={tUi('edit')}
+              srOnly={tUi('edit')}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => void setEditing(true)}
+            />
+            <ActionButton
+              icon={<Trash2 className="h-4 w-4" />}
+              tooltip={tUi('delete')}
+              srOnly={tUi('delete')}
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={() => setConfirmDelete(true)}
+            />
+          </>
         ) : null}
       </div>
       <FaqTiptapRenderer content={article.body as JSONContent} />

@@ -22,10 +22,10 @@ export function FaqShell({ toc, isAdmin, children }: FaqShellProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
+      <div className="mb-6 flex shrink-0 flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
         {isAdmin ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <FaqCategoryDialog categories={toc.categories} />
             <Button asChild size="sm">
               <Link href="/help/faq/new">
@@ -36,9 +36,11 @@ export function FaqShell({ toc, isAdmin, children }: FaqShellProps) {
           </div>
         ) : null}
       </div>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card md:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <FaqTocNav toc={toc} isAdmin={isAdmin} />
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="max-w-3xl py-2 md:py-1 md:pl-10">{children}</div>
+        </div>
       </div>
     </div>
   );

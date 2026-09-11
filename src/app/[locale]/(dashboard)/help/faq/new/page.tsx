@@ -11,7 +11,7 @@ export default async function NewFaqArticlePage() {
   const t = await getTranslations('help.articleForm');
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 pb-12">
       <h2 className="text-2xl font-semibold tracking-tight">{t('createTitle')}</h2>
       <FaqArticleForm categories={toc.categories} pickerArticles={flattenFaqTocArticles(toc)} />
     </div>

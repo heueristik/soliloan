@@ -13,7 +13,7 @@ export function FaqEmptyState({ isAdmin }: FaqEmptyStateProps) {
   const t = useTranslations('help.faqPage');
 
   return (
-    <div className="flex min-h-[12rem] flex-col items-start justify-center gap-3">
+    <div className="flex min-h-[12rem] flex-col items-start justify-center gap-4 py-8">
       <h2 className="text-xl font-semibold">{t('emptyTitle')}</h2>
       <p className="text-muted-foreground">{t('emptyDescription')}</p>
       {isAdmin ? (
