@@ -116,6 +116,13 @@ export function FaqRichTextEditor({
     [closeImageDialog, editor, t, tError],
   );
 
+  const deleteImageFromDialog = useCallback(() => {
+    const current = imageDialogRef.current;
+    if (!current || !editor || current.editPos === undefined) return;
+    editor.chain().focus().setNodeSelection(current.editPos).deleteSelection().run();
+    closeImageDialog();
+  }, [closeImageDialog, editor]);
+
   useEffect(() => {
     if (!editor) return;
 
@@ -196,6 +203,7 @@ export function FaqRichTextEditor({
           if (!open && !submittingImage) closeImageDialog();
         }}
         onConfirm={(alt) => void confirmImageDialog(alt)}
+        onDelete={imageDialog?.mode === 'edit' ? deleteImageFromDialog : undefined}
       />
     </div>
   );

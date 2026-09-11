@@ -23,6 +23,7 @@ type FaqImageAltDialogProps = {
   submitting?: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (alt: string) => void;
+  onDelete?: () => void;
 };
 
 export function FaqImageAltDialog({
@@ -33,6 +34,7 @@ export function FaqImageAltDialog({
   submitting = false,
   onOpenChange,
   onConfirm,
+  onDelete,
 }: FaqImageAltDialogProps) {
   const t = useTranslations('help.editor');
   const tUi = useTranslations('common.ui.actions');
@@ -73,6 +75,17 @@ export function FaqImageAltDialog({
           />
         </div>
         <DialogFooter>
+          {mode === 'edit' && onDelete ? (
+            <Button
+              type="button"
+              variant="destructive"
+              className="sm:mr-auto"
+              disabled={submitting}
+              onClick={onDelete}
+            >
+              {tUi('delete')}
+            </Button>
+          ) : null}
           <Button type="button" variant="outline" disabled={submitting} onClick={() => onOpenChange(false)}>
             {tUi('cancel')}
           </Button>
