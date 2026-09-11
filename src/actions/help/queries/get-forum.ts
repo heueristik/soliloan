@@ -1,7 +1,9 @@
 'use server';
 
 import {
+  boardHasUnread,
   findForumBoardBySlug,
+  findForumBoardOptions,
   findForumBoards,
   findForumThread,
   findForumThreads,
@@ -13,11 +15,19 @@ export async function getForumBoardsUnsafe(userId: string) {
   return findForumBoards(userId);
 }
 
+export async function getForumBoardOptionsUnsafe() {
+  return findForumBoardOptions();
+}
+
+export async function getForumBoardHasUnreadUnsafe(boardId: string, userId: string) {
+  return boardHasUnread(boardId, userId);
+}
+
 export async function getForumBoardBySlugUnsafe(slug: string) {
   return findForumBoardBySlug(slug);
 }
 
-export async function getForumThreadsUnsafe(boardId: string, userId: string, options: { query: string; page: number }) {
+export async function getForumThreadsUnsafe(boardId: string, userId: string, options: { page: number }) {
   return findForumThreads(boardId, userId, options);
 }
 

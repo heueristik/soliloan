@@ -16,6 +16,8 @@ import { formatForumRelativeTime } from '@/lib/help/forum-time';
 import { cn } from '@/lib/utils';
 import type { ForumBoardListItem } from '@/types/forum';
 
+import { ForumAvatar } from './forum-avatar';
+
 type ForumBoardListProps = {
   boards: ForumBoardListItem[];
   isAdmin: boolean;
@@ -28,12 +30,12 @@ function SortableRow({ id, disabled, children }: { id: string; disabled: boolean
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn('flex items-stretch gap-2', isDragging && 'opacity-70')}
+      className={cn('flex items-center gap-2', isDragging && 'opacity-70')}
     >
       {disabled ? null : (
         <button
           type="button"
-          className="mt-4 shrink-0 cursor-grab text-muted-foreground hover:text-foreground"
+          className="shrink-0 cursor-grab text-muted-foreground hover:text-foreground"
           {...attributes}
           {...listeners}
         >
@@ -74,40 +76,38 @@ export function ForumBoardList({ boards, isAdmin }: ForumBoardListProps) {
   };
 
   const list = (
-    <div className="space-y-3">
+    <div className="divide-y divide-border/40">
       {items.map((board) => (
         <SortableRow key={board.id} id={board.id} disabled={!isAdmin}>
           <Link
             href={`/help/forum/${board.slug}`}
-            className="block rounded-lg border p-4 transition-colors hover:bg-muted/40"
+            className="-mx-2 flex items-start gap-4 rounded-md px-2 py-5 transition-colors hover:bg-muted/30"
           >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-semibold">{board.name}</h2>
-                  {board.unreadCount > 0 ? (
-                    <Badge variant="secondary">{t('unreadCount', { count: board.unreadCount })}</Badge>
-                  ) : null}
-                </div>
-                {board.description ? <p className="text-sm text-muted-foreground">{board.description}</p> : null}
-                <p className="text-sm text-muted-foreground">
-                  {t('threadCount', { count: board.threadCount })}
-                  {board.moderatorNames.length > 0
-                    ? ` · ${t('moderators')}: ${board.moderatorNames.join(', ')}`
-                    : ` · ${t('noModerators')}`}
-                </p>
-              </div>
-              <div className="text-right text-sm text-muted-foreground">
-                {board.lastPostedAt ? (
-                  <>
-                    <p>{t('lastActivity')}</p>
-                    <p>{formatForumRelativeTime(board.lastPostedAt)}</p>
-                    {board.lastThreadTitle ? (
-                      <p className="max-w-xs truncate text-foreground/80">{board.lastThreadTitle}</p>
-                    ) : null}
-                  </>
+            <ForumAvatar name={board.name} size="md" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">{board.name}</h2>
+                {board.unreadCount > 0 ? (
+                  <Badge variant="secondary">{t('unreadCount', { count: board.unreadCount })}</Badge>
                 ) : null}
               </div>
+              {board.description ? <p className="text-sm text-muted-foreground">{board.description}</p> : null}
+              <p className="text-sm text-muted-foreground">
+                {t('threadCount', { count: board.threadCount })}
+                {board.moderatorNames.length > 0
+                  ? ` · ${t('moderators')}: ${board.moderatorNames.join(', ')}`
+                  : ` · ${t('noModerators')}`}
+              </p>
+            </div>
+            <div className="hidden shrink-0 text-right text-sm text-muted-foreground sm:block">
+              {board.lastPostedAt ? (
+                <>
+                  <p>{formatForumRelativeTime(board.lastPostedAt)}</p>
+                  {board.lastThreadTitle ? (
+                    <p className="mt-1 max-w-xs truncate text-foreground/80">{board.lastThreadTitle}</p>
+                  ) : null}
+                </>
+              ) : null}
             </div>
           </Link>
         </SortableRow>

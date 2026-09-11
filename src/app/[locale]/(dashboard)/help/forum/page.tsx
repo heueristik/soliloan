@@ -15,7 +15,7 @@ export default async function HelpForumPage() {
   ]);
 
   return (
-    <ForumShell isAdmin={isAdmin} boards={boards} managers={managers}>
+    <ForumShell isAdmin={isAdmin} boards={boards} managers={managers} showManageBoards>
       {boards.length === 0 ? (
         <ForumEmptyState isAdmin={isAdmin} />
       ) : (

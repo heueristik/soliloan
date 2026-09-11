@@ -6,12 +6,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { parseAsString, useQueryState } from 'nuqs';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { reorderFaqAction } from '@/actions/help';
-import { Input } from '@/components/ui/input';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import type { FaqToc, FaqTocArticle, FaqTocCategory } from '@/types/faq';
@@ -20,12 +18,6 @@ type FaqTocNavProps = {
   toc: FaqToc;
   isAdmin: boolean;
 };
-
-function matchesQuery(article: FaqTocArticle, query: string) {
-  if (!query) return true;
-  const haystack = `${article.title} ${article.searchText}`.toLowerCase();
-  return haystack.includes(query);
-}
 
 function moveArticles(articles: FaqTocArticle[], activeId: string, overId: string) {
   const oldIndex = articles.findIndex((article) => `article:${article.id}` === activeId);
@@ -67,30 +59,12 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
   const pathname = usePathname();
   const activeSlug =
     pathname.startsWith('/help/faq/') && !pathname.endsWith('/new') ? pathname.split('/').pop() : undefined;
-  const [query, setQuery] = useQueryState('q', parseAsString.withDefault(''));
   const [localToc, setLocalToc] = useState(toc);
   useEffect(() => {
     setLocalToc(toc);
   }, [toc]);
   const { executeAsync: reorder } = useAction(reorderFaqAction);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-
-  const normalizedQuery = query.trim().toLowerCase();
-
-  const filtered = useMemo(() => {
-    const uncategorized = localToc.uncategorized.filter((article) => matchesQuery(article, normalizedQuery));
-    const categories = localToc.categories
-      .map((category) => ({
-        ...category,
-        articles: category.articles.filter((article) => matchesQuery(article, normalizedQuery)),
-      }))
-      .filter(
-        (category) =>
-          category.articles.length > 0 ||
-          (!normalizedQuery ? true : category.name.toLowerCase().includes(normalizedQuery)),
-      );
-    return { uncategorized, categories };
-  }, [localToc, normalizedQuery]);
 
   const persistOrder = async (next: FaqToc) => {
     setLocalToc(next);
@@ -145,54 +119,27 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
   };
 
   const isEmptyToc = localToc.uncategorized.length === 0 && localToc.categories.length === 0;
-  const hasAny =
-    filtered.uncategorized.length > 0 ||
-    filtered.categories.some((category) => category.articles.length > 0 || !normalizedQuery);
+  if (isEmptyToc) return null;
 
   return (
     <aside className="flex max-h-56 min-h-0 w-full shrink-0 flex-col border-b border-border/50 pb-4 md:max-h-none md:w-72 md:border-b-0 md:border-r md:pr-6 md:pb-0">
-      <div className="shrink-0 pb-3">
-        <Input
-          value={query}
-          onChange={(event) => void setQuery(event.target.value || null)}
-          placeholder={t('searchPlaceholder')}
-        />
-      </div>
-      {isEmptyToc ? null : !hasAny ? (
-        <p className="text-sm text-muted-foreground">{t('noSearchResults')}</p>
-      ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <nav className="min-h-0 flex-1 space-y-5 overflow-y-auto pt-1 text-sm md:pb-8">
-            {filtered.uncategorized.length > 0 ? (
-              <ArticleList
-                articles={filtered.uncategorized}
-                activeSlug={activeSlug}
-                isAdmin={isAdmin}
-                canDrag={isAdmin && !normalizedQuery}
-              />
-            ) : null}
-            <SortableContext
-              items={filtered.categories.map((category) => `category:${category.id}`)}
-              strategy={verticalListSortingStrategy}
-            >
-              {filtered.categories.map((category) => (
-                <SortableItem
-                  key={category.id}
-                  id={`category:${category.id}`}
-                  disabled={!isAdmin || Boolean(normalizedQuery)}
-                >
-                  <CategoryBlock
-                    category={category}
-                    activeSlug={activeSlug}
-                    isAdmin={isAdmin}
-                    canDragArticles={isAdmin && !normalizedQuery}
-                  />
-                </SortableItem>
-              ))}
-            </SortableContext>
-          </nav>
-        </DndContext>
-      )}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <nav className="min-h-0 flex-1 space-y-5 overflow-y-auto pt-1 text-sm md:pb-8">
+          {localToc.uncategorized.length > 0 ? (
+            <ArticleList articles={localToc.uncategorized} activeSlug={activeSlug} isAdmin={isAdmin} canDrag={isAdmin} />
+          ) : null}
+          <SortableContext
+            items={localToc.categories.map((category) => `category:${category.id}`)}
+            strategy={verticalListSortingStrategy}
+          >
+            {localToc.categories.map((category) => (
+              <SortableItem key={category.id} id={`category:${category.id}`} disabled={!isAdmin}>
+                <CategoryBlock category={category} activeSlug={activeSlug} isAdmin={isAdmin} canDragArticles={isAdmin} />
+              </SortableItem>
+            ))}
+          </SortableContext>
+        </nav>
+      </DndContext>
     </aside>
   );
 }

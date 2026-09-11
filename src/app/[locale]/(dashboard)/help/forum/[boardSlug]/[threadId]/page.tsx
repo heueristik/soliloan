@@ -3,8 +3,7 @@ import { notFound } from 'next/navigation';
 import {
   getFaqTocUnsafe,
   getForumBoardBySlugUnsafe,
-  getForumBoardsUnsafe,
-  getForumManagerUsersUnsafe,
+  getForumBoardOptionsUnsafe,
   getForumThreadUnsafe,
   markForumThreadReadUnsafe,
 } from '@/actions/help';
@@ -37,21 +36,24 @@ export default async function ForumThreadPage({ params, searchParams }: ForumThr
 
   await markForumThreadReadUnsafe(thread.id, user.id);
 
-  const [boards, managers, toc] = await Promise.all([
-    getForumBoardsUnsafe(user.id),
-    isAdmin ? getForumManagerUsersUnsafe() : Promise.resolve([]),
-    getFaqTocUnsafe(isAdmin),
-  ]);
+  const [boards, toc] = await Promise.all([getForumBoardOptionsUnsafe(), getFaqTocUnsafe(isAdmin)]);
 
   return (
     <ForumShell
       isAdmin={isAdmin}
-      boards={boards}
-      managers={managers}
+      board={{ id: board.id, name: board.name, slug: board.slug }}
+      boardCurrent={false}
       newThreadHref={`/help/forum/${board.slug}/new`}
-      flush
     >
-      <ForumThreadView thread={thread} boards={boards} pickerArticles={flattenFaqTocArticles(toc)} />
+      <ForumThreadView
+        thread={thread}
+        boards={boards}
+        pickerArticles={flattenFaqTocArticles(toc)}
+        currentUser={{
+          id: user.id,
+          name: session.user.name?.trim() || session.user.email || '',
+        }}
+      />
     </ForumShell>
   );
 }

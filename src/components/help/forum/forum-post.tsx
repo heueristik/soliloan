@@ -23,13 +23,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
+import type { ForumEmoji } from '@/lib/help/forum-constants';
+import { isOptimisticForumPostId } from '@/lib/help/forum-optimistic';
 import { formatForumAbsoluteTime, formatForumRelativeTime } from '@/lib/help/forum-time';
 import { cn } from '@/lib/utils';
 import type { FaqTocArticle } from '@/types/faq';
 import type { ForumPostNode } from '@/types/forum';
 
+import { ForumAvatar } from './forum-avatar';
 import { ForumPostForm } from './forum-post-form';
 import { ForumReactions } from './forum-reactions';
+
+type ForumPostComposer = { mode: 'reply' | 'edit'; postId: string } | null;
 
 type ForumPostProps = {
   post: ForumPostNode;
@@ -37,17 +42,41 @@ type ForumPostProps = {
   boardSlug: string;
   locked: boolean;
   pickerArticles: Pick<FaqTocArticle, 'title' | 'slug'>[];
+  composer: ForumPostComposer;
+  onToggleReply: (postId: string) => void;
+  onToggleEdit: (postId: string) => void;
+  onCloseComposer: () => void;
+  onReact: (postId: string, emoji: ForumEmoji) => void;
+  onEditPost: (postId: string, body: unknown) => void;
+  onReplyToPost: (parent: ForumPostNode, body: unknown) => void;
+  saving?: boolean;
   depth?: number;
 };
 
-export function ForumPost({ post, threadId, boardSlug, locked, pickerArticles, depth = 0 }: ForumPostProps) {
+export function ForumPost({
+  post,
+  threadId,
+  boardSlug,
+  locked,
+  pickerArticles,
+  composer,
+  onToggleReply,
+  onToggleEdit,
+  onCloseComposer,
+  onReact,
+  onEditPost,
+  onReplyToPost,
+  saving = false,
+  depth = 0,
+}: ForumPostProps) {
   const t = useTranslations('help.forumPage');
   const tUi = useTranslations('common.ui.actions');
   const router = useRouter();
-  const [replying, setReplying] = useState(false);
-  const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { executeAsync: remove, isExecuting } = useAction(deleteForumPostAction);
+  const pending = isOptimisticForumPostId(post.id);
+  const editing = !pending && composer?.mode === 'edit' && composer.postId === post.id;
+  const replying = !pending && composer?.mode === 'reply' && composer.postId === post.id;
 
   const copyPermalink = async () => {
     const url = `${window.location.origin}${window.location.pathname}${window.location.search}#post-${post.id}`;
@@ -68,7 +97,7 @@ export function ForumPost({ post, threadId, boardSlug, locked, pickerArticles, d
         )}
       >
         {depth > 0 ? <CornerDownRight className="mt-2 size-4 shrink-0 text-muted-foreground" aria-hidden /> : null}
-        <ForumPostAvatar name={post.author.name} />
+        <ForumAvatar name={post.author.name} />
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className="text-sm leading-none font-medium">{post.author.name}</span>
@@ -96,52 +125,59 @@ export function ForumPost({ post, threadId, boardSlug, locked, pickerArticles, d
               postId={post.id}
               initialBody={post.body}
               pickerArticles={pickerArticles}
-              onCancel={() => setEditing(false)}
+              saving={saving}
+              onCancel={onCloseComposer}
+              onSave={(body) => onEditPost(post.id, body)}
             />
           ) : (
             <FaqTiptapRenderer content={post.body as JSONContent} headings={false} />
           )}
 
-          <div className="flex flex-wrap items-center justify-end gap-1">
-            <ForumReactions postId={post.id} reactions={post.reactions} />
-            {!locked && !editing ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
-                onClick={() => setReplying((value) => !value)}
-              >
-                <Reply className="h-3.5 w-3.5" />
-                {t('reply')}
-              </Button>
-            ) : null}
-            {post.canEdit && !editing ? (
+          {pending ? null : (
+            <div className="flex flex-wrap items-center justify-end gap-1">
+              <ForumReactions reactions={post.reactions} onToggle={(emoji) => onReact(post.id, emoji)} />
+              {!locked && !editing ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
+                  disabled={saving}
+                  onClick={() => onToggleReply(post.id)}
+                >
+                  <Reply className="h-3.5 w-3.5" />
+                  {t('reply')}
+                </Button>
+              ) : null}
+              {post.canEdit && !editing ? (
+                <ActionButton
+                  icon={<Pencil className="h-3.5 w-3.5" />}
+                  tooltip={tUi('edit')}
+                  srOnly={tUi('edit')}
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  disabled={saving}
+                  onClick={() => onToggleEdit(post.id)}
+                />
+              ) : null}
+              {post.canDelete ? (
+                <ActionButton
+                  icon={<Trash2 className="h-3.5 w-3.5" />}
+                  tooltip={tUi('delete')}
+                  srOnly={tUi('delete')}
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  disabled={saving}
+                  onClick={() => setConfirmDelete(true)}
+                />
+              ) : null}
               <ActionButton
-                icon={<Pencil className="h-3.5 w-3.5" />}
-                tooltip={tUi('edit')}
-                srOnly={tUi('edit')}
+                icon={<Link2 className="h-3.5 w-3.5" />}
+                tooltip={t('permalink')}
+                srOnly={t('permalink')}
                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                onClick={() => setEditing(true)}
+                onClick={() => void copyPermalink()}
               />
-            ) : null}
-            {post.canDelete ? (
-              <ActionButton
-                icon={<Trash2 className="h-3.5 w-3.5" />}
-                tooltip={tUi('delete')}
-                srOnly={tUi('delete')}
-                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                onClick={() => setConfirmDelete(true)}
-              />
-            ) : null}
-            <ActionButton
-              icon={<Link2 className="h-3.5 w-3.5" />}
-              tooltip={t('permalink')}
-              srOnly={t('permalink')}
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              onClick={() => void copyPermalink()}
-            />
-          </div>
+            </div>
+          )}
 
           {replying && !locked ? (
             <div className="pt-2">
@@ -151,7 +187,9 @@ export function ForumPost({ post, threadId, boardSlug, locked, pickerArticles, d
                 threadId={threadId}
                 parentId={post.id}
                 pickerArticles={pickerArticles}
-                onCancel={() => setReplying(false)}
+                saving={saving}
+                onCancel={onCloseComposer}
+                onSave={(body) => onReplyToPost(post, body)}
               />
             </div>
           ) : null}
@@ -166,6 +204,14 @@ export function ForumPost({ post, threadId, boardSlug, locked, pickerArticles, d
           boardSlug={boardSlug}
           locked={locked}
           pickerArticles={pickerArticles}
+          composer={composer}
+          saving={saving}
+          onToggleReply={onToggleReply}
+          onToggleEdit={onToggleEdit}
+          onCloseComposer={onCloseComposer}
+          onReact={onReact}
+          onEditPost={onEditPost}
+          onReplyToPost={onReplyToPost}
           depth={depth + 1}
         />
       ))}
@@ -201,35 +247,4 @@ export function ForumPost({ post, threadId, boardSlug, locked, pickerArticles, d
       </AlertDialog>
     </div>
   );
-}
-
-function ForumPostAvatar({ name }: { name: string }) {
-  const hue = authorHue(name);
-  return (
-    <div
-      aria-hidden
-      className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-medium"
-      style={{
-        backgroundColor: `oklch(0.93 0.05 ${hue})`,
-        color: `oklch(0.38 0.08 ${hue})`,
-      }}
-    >
-      {authorInitials(name)}
-    </div>
-  );
-}
-
-function authorInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-}
-
-function authorHue(name: string): number {
-  let hash = 0;
-  for (const char of name) {
-    hash = (hash * 31 + char.charCodeAt(0)) % 360;
-  }
-  return hash;
 }

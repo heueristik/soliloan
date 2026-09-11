@@ -29,9 +29,12 @@ export { getFaqArticleBySlugUnsafe } from './queries/get-faq-article';
 export { getFaqTocAction, getFaqTocUnsafe } from './queries/get-faq-toc';
 export {
   getForumBoardBySlugUnsafe,
+  getForumBoardHasUnreadUnsafe,
+  getForumBoardOptionsUnsafe,
   getForumBoardsUnsafe,
   getForumManagerUsersUnsafe,
   getForumThreadsUnsafe,
   getForumThreadUnsafe,
   markForumThreadReadUnsafe,
 } from './queries/get-forum';
+export { searchHelpAction } from './queries/search-help';

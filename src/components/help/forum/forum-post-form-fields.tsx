@@ -23,7 +23,7 @@ export function ForumPostFormFields({ pickerArticles, label, compact = false }: 
       name="body"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          <FormLabel className="sr-only">{label}</FormLabel>
           <FormControl>
             <FaqRichTextEditor
               value={field.value ?? EMPTY_FAQ_DOC}

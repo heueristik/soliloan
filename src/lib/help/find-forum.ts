@@ -72,6 +72,31 @@ export const findForumBoards = cache(async (userId: string): Promise<ForumBoardL
   });
 });
 
+export async function boardHasUnread(boardId: string, userId: string): Promise<boolean> {
+  const [threads, reads] = await Promise.all([
+    db.forumThread.findMany({
+      where: { boardId },
+      select: { id: true, lastPostedAt: true },
+    }),
+    db.forumThreadRead.findMany({
+      where: { userId, thread: { boardId } },
+      select: { threadId: true, lastReadAt: true },
+    }),
+  ]);
+  const readMap = new Map(reads.map((row) => [row.threadId, row.lastReadAt]));
+  return threads.some((thread) => {
+    const lastRead = readMap.get(thread.id);
+    return !lastRead || thread.lastPostedAt > lastRead;
+  });
+}
+
+export async function findForumBoardOptions(): Promise<Pick<ForumBoardListItem, 'id' | 'name'>[]> {
+  return db.forumBoard.findMany({
+    orderBy: { position: 'asc' },
+    select: { id: true, name: true },
+  });
+}
+
 export const findForumBoardBySlug = cache(async (slug: string): Promise<ForumBoardRecord | null> => {
   const board = await db.forumBoard.findUnique({
     where: { slug },
@@ -94,21 +119,10 @@ export const findForumBoardBySlug = cache(async (slug: string): Promise<ForumBoa
 export async function findForumThreads(
   boardId: string,
   userId: string,
-  options: { query: string; page: number },
+  options: { page: number },
 ): Promise<{ threads: ForumThreadListItem[]; total: number }> {
   const page = Math.max(1, options.page);
-  const query = options.query.trim();
-  const where = {
-    boardId,
-    ...(query
-      ? {
-          OR: [
-            { title: { contains: query, mode: 'insensitive' as const } },
-            { posts: { some: { searchText: { contains: query, mode: 'insensitive' as const } } } },
-          ],
-        }
-      : {}),
-  };
+  const where = { boardId };
 
   const [total, threads, reads] = await Promise.all([
     db.forumThread.count({ where }),
