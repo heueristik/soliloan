@@ -33,6 +33,7 @@ interface SetPasswordFormProps {
 
 export function SetPasswordForm({ token }: SetPasswordFormProps) {
   const t = useTranslations('auth');
+  const tRoot = useTranslations();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,7 +55,11 @@ export function SetPasswordForm({ token }: SetPasswordFormProps) {
         toast.success(t('setPassword.success'));
         router.push('/auth/login');
       } else {
-        toast.error(result.error || t('setPassword.error'));
+        toast.error(
+          result.error?.startsWith('validation.') || result.error?.startsWith('error.')
+            ? tRoot(result.error)
+            : result.error || t('setPassword.error'),
+        );
       }
     } catch (error) {
       console.error('Error setting password:', error);
