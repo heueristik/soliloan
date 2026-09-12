@@ -22,7 +22,7 @@ import {
   mapNotificationType,
   mapPaymentType,
   mapSalutation,
-  mapTerminationPeriodType,
+  mapLoanPeriodFields,
   mapTerminationType,
   mapTransactionType,
 } from './mapping';
@@ -405,6 +405,15 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           }
 
           const interestRate = contract.interest_rate;
+          const periodFields = mapLoanPeriodFields(
+            terminationType,
+            contract.termination_period,
+            contract.termination_period_type,
+            projectInfo.defaults?.termination_period ?? null,
+            projectInfo.defaults?.termination_period_type ?? null,
+            warnings,
+            contract.id,
+          );
 
           const loan = await tx.loan.create({
             data: {
@@ -414,16 +423,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
               terminationType,
               endDate,
               terminationDate,
-              terminationPeriod: contract.termination_period
-                ? Math.round(contract.termination_period)
-                : projectInfo.defaults?.termination_period
-                  ? Math.round(projectInfo.defaults?.termination_period)
-                  : null,
-              terminationPeriodType: mapTerminationPeriodType(
-                contract.termination_period_type ?? projectInfo.defaults?.termination_period_type ?? null,
-                warnings,
-                contract.id,
-              ),
+              ...periodFields,
               amount: contract.amount,
               interestRate,
               altInterestMethod: mapInterestMethod(contract.interest_method, warnings, contract.id),
