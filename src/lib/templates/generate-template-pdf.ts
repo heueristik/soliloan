@@ -44,7 +44,7 @@ async function resolvePdfLogoUrl(logoUrl: string | undefined, assetBaseUrl: stri
     return convertWebpToPngDataUrl(webpBytes);
   }
 
-  if (logoUrl) {
+  if (logoUrl?.startsWith('data:image/')) {
     return logoUrl;
   }
 

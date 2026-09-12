@@ -12,7 +12,8 @@ export function ImageBlock({
   useLogoSource?: boolean;
 }) {
   const { projectLogo, appLogo } = useLogo();
-  const resolvedSrc = useLogoSource ? projectLogo || appLogo : src;
+  const uploadedSrc = src.startsWith('data:') || src.startsWith('/') ? src : '';
+  const resolvedSrc = useLogoSource ? projectLogo || appLogo : uploadedSrc;
 
   return (
     <div className="my-2 inline-block" style={{ width }}>

@@ -360,9 +360,9 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
         },
         defaultProps: {
           displayName: '',
-          src: 'https://via.placeholder.com/150',
+          src: '',
           width: '100%',
-          useLogoSource: false,
+          useLogoSource: true,
         },
         render: (props: ComponentProps<typeof ImageBlock>) => <ImageBlock {...props} />,
       },
