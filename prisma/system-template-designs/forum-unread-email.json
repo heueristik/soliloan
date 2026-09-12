@@ -1,0 +1,223 @@
+{
+  "designJson": {
+    "content": [
+      {
+        "type": "Container",
+        "props": {
+          "gap": 0,
+          "layout": "horizontal",
+          "loopKey": "",
+          "padding": 20,
+          "borderTop": false,
+          "alignItems": "center",
+          "background": "transparent",
+          "borderLeft": false,
+          "borderColor": "#3d3846",
+          "borderRight": false,
+          "borderStyle": "solid",
+          "borderWidth": 1,
+          "gridColumns": 2,
+          "borderBottom": true,
+          "justifyContent": "space-between",
+          "id": "forumDigestHeader",
+          "content": [
+            {
+              "type": "Image",
+              "props": {
+                "src": "/soliloan-logo.webp",
+                "width": "92px",
+                "useLogoSource": true,
+                "id": "forumDigestLogo"
+              }
+            },
+            {
+              "type": "Text",
+              "props": {
+                "text": "<p><strong>Neue Nachrichten im Forum</strong></p>",
+                "color": "#000000",
+                "fontSize": 25,
+                "textAlign": "left",
+                "id": "forumDigestTitle"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Container",
+        "props": {
+          "gap": 12,
+          "layout": "vertical",
+          "loopKey": "",
+          "padding": 20,
+          "borderTop": false,
+          "alignItems": "stretch",
+          "background": "transparent",
+          "borderLeft": false,
+          "borderColor": "#e4e4e7",
+          "borderRight": false,
+          "borderStyle": "solid",
+          "borderWidth": 1,
+          "gridColumns": 2,
+          "borderBottom": false,
+          "justifyContent": "flex-start",
+          "id": "forumDigestBody",
+          "content": [
+            {
+              "type": "Text",
+              "props": {
+                "text": "<p>Hallo <span data-merge-tag-id=\"user.name\" data-merge-tag-label=\"Name\" data-merge-tag=\"user.name\" class=\"merge-tag-pill\">{{Name}}</span>,</p><p>Es gibt neue Nachrichten in <span data-merge-tag-id=\"digest.threadCount\" data-merge-tag-label=\"Anzahl ungelesener Themen\" data-merge-tag=\"digest.threadCount\" class=\"merge-tag-pill\">{{Anzahl ungelesener Themen}}</span> Forenthemen:</p>",
+                "color": "#000000",
+                "fontSize": 16,
+                "textAlign": "left",
+                "id": "forumDigestIntro"
+              }
+            },
+            {
+              "type": "Container",
+              "props": {
+                "gap": 4,
+                "layout": "vertical",
+                "loopKey": "threads",
+                "padding": 12,
+                "borderTop": false,
+                "alignItems": "stretch",
+                "background": "#f8fafc",
+                "borderLeft": false,
+                "borderColor": "#e4e4e7",
+                "borderRight": false,
+                "borderStyle": "solid",
+                "borderWidth": 1,
+                "gridColumns": 2,
+                "borderBottom": true,
+                "justifyContent": "flex-start",
+                "id": "forumDigestThreads",
+                "content": [
+                  {
+                    "type": "Text",
+                    "props": {
+                      "text": "<p><span data-merge-tag-id=\"board.name\" data-merge-tag-label=\"Forumname\" data-merge-tag=\"board.name\" class=\"merge-tag-pill\">{{Forumname}}</span> · <span data-merge-tag-id=\"thread.unreadCount\" data-merge-tag-label=\"Ungelesene Beiträge\" data-merge-tag=\"thread.unreadCount\" class=\"merge-tag-pill\">{{Ungelesene Beiträge}}</span> ungelesen</p><p><strong><span data-merge-tag-id=\"thread.title\" data-merge-tag-label=\"Thementitel\" data-merge-tag=\"thread.title\" class=\"merge-tag-pill\">{{Thementitel}}</span></strong></p>",
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "textAlign": "left",
+                      "id": "forumDigestThreadText"
+                    }
+                  },
+                  {
+                    "type": "Button",
+                    "props": {
+                      "url": "{{thread.url}}",
+                      "text": "Zum Thema",
+                      "color": "#ffffff",
+                      "background": "#2563eb",
+                      "systemUrlKey": "",
+                      "useSystemUrl": false,
+                      "id": "forumDigestThreadButton"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Container",
+              "props": {
+                "gap": 8,
+                "layout": "vertical",
+                "loopKey": "moreThreads",
+                "padding": 0,
+                "borderTop": false,
+                "alignItems": "stretch",
+                "background": "transparent",
+                "borderLeft": false,
+                "borderColor": "#e4e4e7",
+                "borderRight": false,
+                "borderStyle": "solid",
+                "borderWidth": 1,
+                "gridColumns": 2,
+                "borderBottom": false,
+                "justifyContent": "flex-start",
+                "id": "forumDigestMoreThreads",
+                "content": [
+                  {
+                    "type": "Text",
+                    "props": {
+                      "text": "<p>Es gibt weitere ungelesene Themen im Forum.</p>",
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "textAlign": "left",
+                      "id": "forumDigestMoreText"
+                    }
+                  },
+                  {
+                    "type": "Button",
+                    "props": {
+                      "url": "{{moreThread.url}}",
+                      "text": "Weitere im Forum",
+                      "color": "#ffffff",
+                      "background": "#2563eb",
+                      "systemUrlKey": "",
+                      "useSystemUrl": false,
+                      "id": "forumDigestMoreButton"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Container",
+        "props": {
+          "gap": 8,
+          "layout": "vertical",
+          "loopKey": "",
+          "padding": 5,
+          "borderTop": true,
+          "alignItems": "center",
+          "background": "transparent",
+          "borderLeft": false,
+          "borderColor": "#3d3846",
+          "borderRight": false,
+          "borderStyle": "solid",
+          "borderWidth": 1,
+          "gridColumns": 2,
+          "borderBottom": false,
+          "justifyContent": "flex-start",
+          "id": "forumDigestFooter",
+          "content": [
+            {
+              "type": "Text",
+              "props": {
+                "text": "<p><em>Die Einstellungen für deine Foren-Benachrichtigungen kannst du in deinem Konto ändern.</em></p>",
+                "color": "#000000",
+                "fontSize": 12,
+                "textAlign": "center",
+                "id": "forumDigestFooterText"
+              }
+            },
+            {
+              "type": "Button",
+              "props": {
+                "url": "{{digest.manageUrl}}",
+                "text": "Konto-Einstellungen",
+                "color": "#ffffff",
+                "background": "#2563eb",
+                "systemUrlKey": "",
+                "useSystemUrl": false,
+                "id": "forumDigestFooterButton"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "root": {
+      "props": {
+        "header": [],
+        "footer": []
+      }
+    }
+  },
+  "subjectOrFilename": "{{threadCount}} ungelesene Forenthemen"
+}

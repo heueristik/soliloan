@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { normalizeNoteContentForEditor } from '@/lib/notes/note-html';
 import { getNoteTiptapExtensions } from '@/lib/notes/note-tiptap-extensions';
+import { handleTiptapEmptyAreaMouseDown } from '@/lib/tiptap/handle-empty-area-mousedown';
 
 type UseNoteTiptapEditorOptions = {
   content: string;
@@ -25,8 +26,13 @@ export function useNoteTiptapEditor({ content, editable, onUpdate }: UseNoteTipt
       editable,
       editorProps: {
         attributes: {
-          class: editable ? 'note-tiptap-editor outline-none' : 'note-tiptap-renderer outline-none',
+          class: editable ? 'note-tiptap-editor outline-none min-h-full' : 'note-tiptap-renderer outline-none',
         },
+        handleDOMEvents: editable
+          ? {
+              mousedown: handleTiptapEmptyAreaMouseDown,
+            }
+          : undefined,
       },
       onUpdate: onUpdate
         ? ({ editor: ed }) => {

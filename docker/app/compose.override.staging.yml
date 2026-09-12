@@ -29,3 +29,4 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD:-}
       - SMTP_FROM=${SMTP_FROM:?}
       - ENVIRONMENT=staging
+      - CRON_SECRET=${CRON_SECRET:?}

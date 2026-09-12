@@ -13,12 +13,14 @@ export function getDefaultSystemLinkMergeData(): {
   projectLink: string;
   lenderLink: string;
   loanLink: string;
+  accountLink: string;
 } {
   const base = getAppBaseUrl() || '#';
   return {
     projectLink: base,
     lenderLink: base,
     loanLink: base,
+    accountLink: `${base}/de/account`,
   };
 }
 

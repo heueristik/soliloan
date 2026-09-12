@@ -10,6 +10,7 @@ import {
   assertLenderCanUsePublicCommunicationTemplate,
   assertManagerCanUseCommunicationTemplate,
 } from '@/lib/templates/template-use-access';
+import { contentDispositionAttachment } from '@/lib/utils/file';
 
 /**
  * GET /api/templates/[id]/download
@@ -113,13 +114,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       template.name.replace(/[/\\?%*:|"<>]/g, '_'),
     );
 
-    const encoded = encodeURIComponent(filename);
-
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encoded}`,
+        'Content-Disposition': contentDispositionAttachment(filename),
       },
     });
   } catch (error) {

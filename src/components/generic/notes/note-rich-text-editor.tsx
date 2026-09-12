@@ -70,11 +70,17 @@ export function NoteRichTextEditor({ value, onChange, placeholder, className }: 
       )}
     >
       <NoteEditorToolbar editor={editor} />
-      <div className="relative flex-1 px-3 py-2">
+      <div
+        className="relative min-h-[5rem] flex-1 px-3 py-2"
+        onMouseDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          editor.chain().focus('end').run();
+        }}
+      >
         {placeholder && isEmpty && !isFocused ? (
           <p className="pointer-events-none absolute left-3 top-2 text-sm text-muted-foreground">{placeholder}</p>
         ) : null}
-        <EditorContent editor={editor} />
+        <EditorContent editor={editor} className="h-full min-h-[5rem]" />
       </div>
     </div>
   );
