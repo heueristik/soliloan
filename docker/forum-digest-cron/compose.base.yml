@@ -1,0 +1,38 @@
+#
+# Sidecar: POST /api/cron/forum-digest every 5 minutes.
+# One run at a time: a tick is skipped while the previous curl is still in flight.
+# The API also refuses overlapping jobs, so a dropped curl cannot start a second send.
+#
+
+services:
+  forum-digest-cron:
+    image: curlimages/curl:8.16.0
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      - CRON_SECRET=${CRON_SECRET:-}
+    networks:
+      - backend_network
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        pid=""
+        while true; do
+          if [ -n "$$pid" ] && kill -0 "$$pid" 2>/dev/null; then
+            echo "forum digest still running, skip tick"
+          else
+            if [ -n "$$pid" ]; then
+              wait "$$pid" || true
+              pid=""
+            fi
+            if [ -n "$$CRON_SECRET" ]; then
+              curl -fsS -X POST -H "Authorization: Bearer $$CRON_SECRET" http://app:3000/api/cron/forum-digest || true &
+              pid=$$!
+            else
+              echo "CRON_SECRET missing, skip forum digest"
+            fi
+          fi
+          sleep 300
+        done

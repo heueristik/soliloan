@@ -1,18 +1,24 @@
 import { redirect } from 'next/navigation';
 
+import { getForumSubscriptionsUnsafe } from '@/actions/help';
 import { AccountPageContent } from '@/components/account/account-page-content';
 import { db } from '@/lib/db';
 import { requireSession } from '@/lib/require-session';
 
 export default async function AccountPage() {
   const session = await requireSession();
+  const userId = session.user.id;
+  if (!userId) {
+    redirect('/auth/login');
+  }
 
   const user = await db.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: userId },
     select: {
       email: true,
       name: true,
       language: true,
+      forumDigestDelayMinutes: true,
     },
   });
 
@@ -20,5 +26,22 @@ export default async function AccountPage() {
     redirect('/auth/login');
   }
 
-  return <AccountPageContent user={user} />;
+  const showForumDigest = Boolean(session.user.isManager && user.email?.trim());
+  const subscriptions = showForumDigest ? await getForumSubscriptionsUnsafe(userId) : null;
+
+  return (
+    <AccountPageContent
+      user={user}
+      forumDigest={
+        showForumDigest && subscriptions
+          ? {
+              delayMinutes: user.forumDigestDelayMinutes,
+              boards: subscriptions.boards,
+              threads: subscriptions.threads,
+              mutes: subscriptions.mutes,
+            }
+          : null
+      }
+    />
+  );
 }

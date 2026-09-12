@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { db } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { passwordSchema } from '@/lib/schemas/common';
 import { generateToken } from '@/lib/token';
 import { normalizeStoredEmail } from '@/lib/utils/email';
 import { hashPassword } from '@/lib/utils/password';
@@ -16,6 +17,10 @@ import { hashPassword } from '@/lib/utils/password';
  */
 export async function setPassword(token: string, password: string) {
   try {
+    if (!passwordSchema.safeParse(password).success) {
+      return { success: false, error: 'validation.account.passwordMinLength' };
+    }
+
     // Find the user with the given reset token
     const user = await db.user.findFirst({
       where: {

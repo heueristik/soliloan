@@ -2,9 +2,15 @@ import { getTranslations } from 'next-intl/server';
 
 import { LoginForm } from '@/components/auth/login-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { sanitizeLoginCallbackUrl } from '@/lib/login-callback-url';
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ callbackUrl?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const t = await getTranslations('auth.login');
+  const { callbackUrl } = await searchParams;
 
   return (
     <div className="space-y-4 md:space-y-8">
@@ -14,7 +20,7 @@ export default async function LoginPage() {
           <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm />
+          <LoginForm callbackUrl={sanitizeLoginCallbackUrl(callbackUrl)} />
         </CardContent>
       </Card>
     </div>

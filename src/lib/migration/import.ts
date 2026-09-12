@@ -10,6 +10,8 @@ import AdmZip from 'adm-zip';
 import { isAfter } from 'date-fns';
 import { normalizeStoredEmail } from '@/lib/utils/email';
 import { createThumbnail } from '@/lib/utils/file';
+import { sniffMimeType, UNKNOWN_FILE_MIME } from '@/lib/utils/mime';
+import { anonymizeDataPackage } from './anonymize';
 import {
   emptyToNull,
   ensureUniqueSlug,
@@ -18,15 +20,14 @@ import {
   mapInterestMethod,
   mapLenderNames,
   mapLenderType,
+  mapLoanPeriodFields,
   mapMembershipStatus,
   mapNotificationType,
   mapPaymentType,
   mapSalutation,
-  mapTerminationPeriodType,
   mapTerminationType,
   mapTransactionType,
 } from './mapping';
-import { anonymizeDataPackage } from './anonymize';
 import type {
   Dkpv1DataPackage,
   Dkpv1ProjectInfo,
@@ -405,6 +406,15 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           }
 
           const interestRate = contract.interest_rate;
+          const periodFields = mapLoanPeriodFields(
+            terminationType,
+            contract.termination_period,
+            contract.termination_period_type,
+            projectInfo.defaults?.termination_period ?? null,
+            projectInfo.defaults?.termination_period_type ?? null,
+            warnings,
+            contract.id,
+          );
 
           const loan = await tx.loan.create({
             data: {
@@ -414,16 +424,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
               terminationType,
               endDate,
               terminationDate,
-              terminationPeriod: contract.termination_period
-                ? Math.round(contract.termination_period)
-                : projectInfo.defaults?.termination_period
-                  ? Math.round(projectInfo.defaults?.termination_period)
-                  : null,
-              terminationPeriodType: mapTerminationPeriodType(
-                contract.termination_period_type ?? projectInfo.defaults?.termination_period_type ?? null,
-                warnings,
-                contract.id,
-              ),
+              ...periodFields,
               amount: contract.amount,
               interestRate,
               altInterestMethod: mapInterestMethod(contract.interest_method, warnings, contract.id),
@@ -544,12 +545,15 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             }
           }
 
-          const thumbnailData = shouldEmptyFile ? null : await createThumbnail(fileData, file.mime);
+          const mimeType = shouldEmptyFile
+            ? file.mime || UNKNOWN_FILE_MIME
+            : (sniffMimeType(fileData) ?? file.mime ?? UNKNOWN_FILE_MIME);
+          const thumbnailData = shouldEmptyFile ? null : await createThumbnail(fileData, mimeType);
 
           await tx.file.create({
             data: {
               name: file.filename,
-              mimeType: file.mime,
+              mimeType,
               data: new Uint8Array(fileData),
               thumbnail: thumbnailData,
               public: file.public === 1,
