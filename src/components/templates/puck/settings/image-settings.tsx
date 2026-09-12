@@ -18,7 +18,7 @@ export function ImageSettings() {
   const width = String(props.width ?? '100px');
   const useLogoSource = Boolean(props.useLogoSource);
   const isBase64 = src.startsWith('data:');
-  const defaultTab = useLogoSource ? 'logo' : isBase64 ? 'upload' : 'url';
+  const defaultTab = useLogoSource ? 'logo' : 'upload';
   const resolvedLogo = projectLogo || appLogo;
   const hasProjectLogo = Boolean(projectLogo);
 
@@ -35,9 +35,6 @@ export function ImageSettings() {
         }}
       >
         <TabsList variant="modern" className="mt-0">
-          <TabsTrigger variant="modern" size="sm" value="url">
-            {t('tabUrl')}
-          </TabsTrigger>
           <TabsTrigger variant="modern" size="sm" value="upload">
             {t('tabUpload')}
           </TabsTrigger>
@@ -45,22 +42,6 @@ export function ImageSettings() {
             {t('tabLogo')}
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="url" className="mt-3">
-          <div className="space-y-2">
-            <label className="text-xs font-medium" htmlFor="src">
-              {t('imageUrl')}
-            </label>
-            <input
-              id="src"
-              type="text"
-              value={isBase64 || useLogoSource ? '' : src}
-              onChange={(event) => patch({ src: event.target.value, useLogoSource: false })}
-              placeholder="https://example.com/image.png"
-              className="w-full rounded border px-2 py-1 font-mono text-sm"
-            />
-          </div>
-        </TabsContent>
 
         <TabsContent value="upload" className="mt-3">
           <div className="space-y-2">

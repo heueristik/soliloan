@@ -18,7 +18,7 @@ export function ImageSourceField() {
   const useLogoSource = Boolean(props.useLogoSource);
 
   const isBase64 = src.startsWith('data:');
-  const defaultTab = useLogoSource ? 'logo' : isBase64 ? 'upload' : 'url';
+  const defaultTab = useLogoSource ? 'logo' : 'upload';
   const resolvedLogo = projectLogo || appLogo;
 
   return (
@@ -34,9 +34,6 @@ export function ImageSourceField() {
         }}
       >
         <TabsList variant="modern" className="mt-0">
-          <TabsTrigger variant="modern" size="sm" value="url">
-            {t('tabUrl')}
-          </TabsTrigger>
           <TabsTrigger variant="modern" size="sm" value="upload">
             {t('tabUpload')}
           </TabsTrigger>
@@ -44,19 +41,6 @@ export function ImageSourceField() {
             {t('tabLogo')}
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="url" className="mt-3 space-y-2">
-          <label className="text-xs font-medium" htmlFor="puckImageSrc">
-            {t('imageUrl')}
-          </label>
-          <input
-            id="puckImageSrc"
-            type="text"
-            value={useLogoSource ? '' : src}
-            onChange={(event) => patch({ src: event.target.value, useLogoSource: false })}
-            className="w-full rounded border px-2 py-1 text-sm"
-          />
-        </TabsContent>
 
         <TabsContent value="upload" className="mt-3 space-y-2">
           <input

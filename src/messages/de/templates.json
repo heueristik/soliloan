@@ -257,9 +257,7 @@
         "blockSaveError": "Fehler beim Speichern der Schablone"
       },
       "image": {
-        "imageUrl": "Bild URL",
         "width": "Breite (e.g. 100%, 200px)",
-        "tabUrl": "URL",
         "tabUpload": "Hochladen",
         "tabLogo": "Logo",
         "uploadImage": "Bild hochladen",

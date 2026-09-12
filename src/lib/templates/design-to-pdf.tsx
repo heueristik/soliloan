@@ -1,19 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: needed */
 const DEFAULT_APP_LOGO_SRC = '/soliloan-logo.webp';
 
-function resolvePdfImageSrc(src: string, assetBaseUrl?: string): string {
-  if (!src) return src;
-  if (src.startsWith('data:') || src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
-  }
-  if (!src.startsWith('/')) {
-    return src;
-  }
-
-  const baseUrl = (assetBaseUrl || process.env.SOLILOAN_URL || process.env.NEXTAUTH_URL || '').replace(/\/+$/, '');
-  return baseUrl ? `${baseUrl}${src}` : src;
-}
-
 /**
  * Renders editor design JSON to @react-pdf/renderer components.
  * Used by the PDF API to generate documents from design + sample data
@@ -25,6 +12,7 @@ import React from 'react';
 import { type DesignComponent, designComponentId, getDocumentLayout } from '@/lib/templates/design-tree';
 import { paddingPropsToPdfPoints, resolvePaddingPx } from '@/lib/templates/padding-utils';
 import { type RasterSize, readRasterSizeFromDataUrl } from '@/lib/templates/raster-image-size';
+import { resolveTemplateImageSrc } from '@/lib/templates/resolve-template-image-src';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
@@ -557,7 +545,7 @@ export function renderDesignToPdfParts(
         const resolvedWidth =
           parseImageWidthToPt(props?.width, availableWidth) ?? Math.min(availableWidth, pxToPdfPt(180));
         const rawSrc = props?.useLogoSource === true ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
-        const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
+        const src = resolveTemplateImageSrc(rawSrc, assetBaseUrl);
         const estimatedHeight = resolvedWidth * resolveImageAspectRatio(props, src);
         return estimatedHeight + pxToPdfPt(16);
       }
@@ -804,7 +792,7 @@ export function renderDesignToPdfParts(
       case 'Image': {
         const useLogo = props?.useLogoSource === true;
         const rawSrc = useLogo ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
-        const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
+        const src = resolveTemplateImageSrc(rawSrc, assetBaseUrl);
         if (!src) return null;
         const widthStyle = imageWidthToPdfStyle(props?.width ?? '100%');
         const aspect = resolveImageAspectRatio(props, src);

@@ -67,7 +67,7 @@
                       {
                         "type": "Image",
                         "props": {
-                          "src": "https://via.placeholder.com/150",
+                          "src": "",
                           "width": "50px",
                           "useLogoSource": true,
                           "id": "01HZ529OKw"

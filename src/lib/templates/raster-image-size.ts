@@ -38,11 +38,5 @@ export function readRasterSizeFromDataUrl(dataUrl: string): RasterSize | null {
 export async function measureRasterSrc(src: string): Promise<RasterSize | null> {
   const fromDataUrl = readRasterSizeFromDataUrl(src);
   if (fromDataUrl) return fromDataUrl;
-  try {
-    const response = await fetch(src);
-    if (!response.ok) return null;
-    return readRasterSize(Buffer.from(await response.arrayBuffer()));
-  } catch {
-    return null;
-  }
+  return null;
 }

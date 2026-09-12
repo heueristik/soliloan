@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: needed */
 import { type DesignComponent, getDocumentLayout, getEmailComponents } from '@/lib/templates/design-tree';
 import { paddingPropsToCssString, resolvePaddingPx } from '@/lib/templates/padding-utils';
+import { resolveTemplateImageSrc as resolveSafeImageSrc } from '@/lib/templates/resolve-template-image-src';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
 /**
@@ -161,14 +162,7 @@ const borderPropsToCss = (props: Record<string, unknown> | null | undefined): st
  * work in email clients outside the app.
  */
 const resolveImageSrc = (src: string): string => {
-  if (!src) return src;
-  if (src.startsWith('data:') || src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
-  }
-  const baseUrl = (process.env.SOLILOAN_URL || '').replace(/\/+$/, '');
-  if (!baseUrl) return src;
-  const path = src.startsWith('/') ? src : `/${src}`;
-  return `${baseUrl}${path}`;
+  return resolveSafeImageSrc(src, process.env.SOLILOAN_URL);
 };
 
 const DEFAULT_APP_LOGO_SRC = '/soliloan-logo.webp';
