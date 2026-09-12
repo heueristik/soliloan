@@ -21,6 +21,8 @@ export const resetAccountAction = authAction.action(async ({ ctx: { session } })
         lastInvited: null,
         passwordResetToken: null,
         passwordResetTokenExpiresAt: null,
+        failedLoginAttempts: 0,
+        lockedUntil: null,
         language: Language.de,
         managerOf: { set: [] },
       },

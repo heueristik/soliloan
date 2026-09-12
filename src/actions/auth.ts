@@ -9,6 +9,9 @@ import { generateToken } from '@/lib/token';
 import { normalizeStoredEmail } from '@/lib/utils/email';
 import { hashPassword } from '@/lib/utils/password';
 
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
+const PASSWORD_RESET_COOLDOWN_MS = 5 * 60 * 1000;
+
 /**
  * Set a user's password using a token
  * @param token The password reset token
@@ -79,6 +82,7 @@ export async function requestPasswordReset(email: string) {
         email: true,
         name: true,
         language: true,
+        passwordResetTokenExpiresAt: true,
       },
     });
 
@@ -86,12 +90,14 @@ export async function requestPasswordReset(email: string) {
       return { success: true }; // Return success even if user not found for security
     }
 
+    const remainingMs = user.passwordResetTokenExpiresAt ? user.passwordResetTokenExpiresAt.getTime() - Date.now() : 0;
+    if (remainingMs > PASSWORD_RESET_TTL_MS - PASSWORD_RESET_COOLDOWN_MS) {
+      return { success: true };
+    }
+
     // Generate a token for password reset
     const token = generateToken();
-
-    // Calculate expiration date (1 hour from now)
-    const expirationDate = new Date();
-    expirationDate.setHours(expirationDate.getHours() + 1);
+    const expirationDate = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
 
     // Update the user with the token and expiration date
     await db.user.update({

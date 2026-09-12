@@ -39,25 +39,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error('error.account.noPassword');
         }
 
-        if (user.lockedUntil && user.lockedUntil > new Date()) {
-          throw new Error('error.auth.accountLocked');
-        }
+        const now = new Date();
+        const isLocked = Boolean(user.lockedUntil && user.lockedUntil > now);
+        const failedLoginAttempts = user.lockedUntil && user.lockedUntil <= now ? 0 : user.failedLoginAttempts;
 
         const { verifyPassword } = await import('./utils/password');
         const isValid = await verifyPassword(credentials.password as string, user.password);
 
-        if (!isValid) {
-          const failedLoginAttempts = user.failedLoginAttempts + 1;
-          await db.user.update({
-            where: { id: user.id },
-            data: {
-              failedLoginAttempts,
-              lockedUntil:
-                failedLoginAttempts >= MAX_FAILED_LOGIN_ATTEMPTS
-                  ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000)
-                  : null,
-            },
-          });
+        if (isLocked || !isValid) {
+          if (!isLocked) {
+            const nextAttempts = failedLoginAttempts + 1;
+            await db.user.update({
+              where: { id: user.id },
+              data: {
+                failedLoginAttempts: nextAttempts,
+                lockedUntil:
+                  nextAttempts >= MAX_FAILED_LOGIN_ATTEMPTS ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000) : null,
+              },
+            });
+          }
           throw new Error('Invalid password');
         }
         await db.user.update({
