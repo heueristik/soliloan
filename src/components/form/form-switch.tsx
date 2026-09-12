@@ -30,21 +30,33 @@ export function FormSwitch({
     <FormFieldWrapper
       control={form.control}
       name={name}
-      render={({ field }) => (
-        <FormItem className={className}>
-          <div className={cn(labelPlacement === 'inline' && 'flex items-center justify-between gap-4')}>
-            {label && <FormLabel>{label}</FormLabel>}
-            <FormControl>
-              <Switch
-                checked={field.value === true || field.value === 'true'}
-                onCheckedChange={(checked) => field.onChange(stringValue ? (checked ? 'true' : 'false') : checked)}
-                className={cn(labelPlacement === 'top' && 'mt-2')}
-              />
-            </FormControl>
-          </div>
-          {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
-        </FormItem>
-      )}
+      render={({ field }) => {
+        const checked = field.value === true || field.value === 'true';
+        const onCheckedChange = (next: boolean) => field.onChange(stringValue ? (next ? 'true' : 'false') : next);
+
+        return (
+          <FormItem className={className}>
+            <div className={cn(labelPlacement === 'inline' && 'flex items-center gap-2')}>
+              {labelPlacement === 'inline' ? (
+                <>
+                  <FormControl>
+                    <Switch checked={checked} onCheckedChange={onCheckedChange} />
+                  </FormControl>
+                  {label && <FormLabel className="cursor-pointer">{label}</FormLabel>}
+                </>
+              ) : (
+                <>
+                  {label && <FormLabel>{label}</FormLabel>}
+                  <FormControl>
+                    <Switch checked={checked} onCheckedChange={onCheckedChange} className="mt-2" />
+                  </FormControl>
+                </>
+              )}
+            </div>
+            {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
+          </FormItem>
+        );
+      }}
     />
   );
 }

@@ -89,6 +89,24 @@
     "name": "Name",
     "email": "E-Mail"
   },
+  "digest": {
+    "threadCount": "Anzahl ungelesener Themen",
+    "hasMoreThreads": "Weitere Themen vorhanden",
+    "manageUrl": "Link zu Foren-Abonnements"
+  },
+  "thread": {
+    "title": "Thementitel",
+    "url": "Themen-Link",
+    "unreadCount": "Ungelesene Beiträge"
+  },
+  "board": {
+    "name": "Forumname",
+    "slug": "Forum-Slug",
+    "url": "Forum-Link"
+  },
+  "moreThread": {
+    "url": "Link zum Forum"
+  },
   "latestTransaction": {
     "type": "Typ (letzte Transaktion)",
     "amount": "Betrag (letzte Transaktion)",
@@ -152,11 +170,17 @@
     "transactions": "Für jede Transaktion",
     "transactionsYearly": "Für jede Transaktion (Jahr)",
     "notes": "Für jede Notiz",
-    "lenders": "Für jeden Darlehensgeber"
+    "lenders": "Für jeden Darlehensgeber",
+    "threads": "Für jedes ungelesene Thema",
+    "moreThreads": "Weitere Themen"
   },
   "categories": {
     "config": "Projekt-Konfiguration",
     "user": "Benutzer",
+    "digest": "Foren-Zusammenfassung",
+    "thread": "Thema",
+    "board": "Forum",
+    "moreThread": "Weitere Themen",
     "lender": "Darlehensgeber",
     "loan": "Darlehen",
     "latestTransaction": "Letzte Transaktion",

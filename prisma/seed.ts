@@ -44,6 +44,13 @@ const SYSTEM_TEMPLATES: Array<{
     dataset: TemplateDataset.USER,
   },
   {
+    systemKey: 'forum-unread-email',
+    name: 'Foren-Zusammenfassung',
+    description: 'E-Mail über ungelesene Forenthemen',
+    type: 'EMAIL' as const,
+    dataset: TemplateDataset.USER,
+  },
+  {
     systemKey: 'manager-invite-email',
     name: 'Manager-Einladung',
     description: 'E-Mail-Einladung für Projektmanager',
@@ -162,6 +169,14 @@ async function seedSystemTemplates(adminUserId: string) {
           createdBy: { connect: { id: adminUserId } },
         },
       });
+    } else if (tpl.systemKey === 'forum-unread-email') {
+      const current = JSON.stringify(exists.designJson ?? '');
+      if (current.includes('digest.manageUrl') && !current.includes('forumDigestFooterButton')) {
+        await prisma.communicationTemplate.update({
+          where: { id: exists.id },
+          data: { designJson, subjectOrFilename },
+        });
+      }
     }
   }
   await prisma.communicationTemplate.updateMany({

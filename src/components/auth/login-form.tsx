@@ -24,7 +24,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function LoginForm() {
+type LoginFormProps = {
+  callbackUrl?: string | null;
+};
+
+export function LoginForm({ callbackUrl }: LoginFormProps) {
   const t = useTranslations('auth.login');
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +57,7 @@ export function LoginForm() {
         toast.error(t('invalidCredentials'));
       } else {
         toast.success(t('success'));
-        router.push('/');
+        router.push(callbackUrl || '/');
       }
     } catch (error) {
       console.error('Error during login:', error);

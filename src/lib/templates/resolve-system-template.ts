@@ -30,6 +30,25 @@ export async function resolveSystemTemplate(systemKey: string, projectId?: strin
   return projectRow ?? rows[0] ?? null;
 }
 
+/** Global system email only (`projectId` null). Forum digest has no project. */
+export async function resolveGlobalSystemTemplate(systemKey: string) {
+  return db.communicationTemplate.findFirst({
+    where: {
+      systemKey,
+      isSystem: true,
+      type: 'EMAIL',
+      projectId: null,
+    },
+    select: {
+      id: true,
+      designJson: true,
+      dataset: true,
+      projectId: true,
+      subjectOrFilename: true,
+    },
+  });
+}
+
 /**
  * Render a system email template to final HTML with all merge tags replaced.
  * Returns null if the template has no usable design or produces empty output.

@@ -250,11 +250,12 @@ export function TemplateEditorView({
   const logoContextValue = useMemo(() => ({ projectLogo, appLogo: '/soliloan-logo.webp' }), [projectLogo]);
 
   const loadPreviewSampleData = useCallback(async (): Promise<Record<string, unknown>> => {
+    const isUserDataset = dataset === 'USER';
     const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
     const canLoadMergeData =
-      Boolean(templateRecordId) &&
+      (isUserDataset || Boolean(templateRecordId)) &&
       (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
-    if (!canLoadMergeData || !templateRecordId) return {};
+    if (!canLoadMergeData || (!isUserDataset && !templateRecordId)) return {};
 
     try {
       const mergeResult = await getMergeTagValuesAction({
