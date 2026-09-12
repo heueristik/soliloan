@@ -1,6 +1,8 @@
 import { Language } from '@prisma/client';
 import { z } from 'zod';
 
+import { FORUM_DIGEST_DELAY_MINUTES } from '@/lib/help/forum-constants';
+
 import { selectEnumRequired } from './common';
 
 export const updateProfileSchema = z.object({
@@ -22,3 +24,23 @@ export const changePasswordSchema = z
   });
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+
+export const updateForumDigestDelayFormSchema = z.object({
+  forumDigestDelayMinutes: z.enum(['15', '30', '60', '240', '720', '1440', '10080'], {
+    message: 'validation.account.forumDigestDelayInvalid',
+  }),
+});
+
+export type UpdateForumDigestDelayFormValues = z.infer<typeof updateForumDigestDelayFormSchema>;
+
+export const updateForumDigestDelaySchema = z.object({
+  forumDigestDelayMinutes: z.coerce
+    .number()
+    .refine(
+      (value): value is (typeof FORUM_DIGEST_DELAY_MINUTES)[number] =>
+        (FORUM_DIGEST_DELAY_MINUTES as readonly number[]).includes(value),
+      { message: 'validation.account.forumDigestDelayInvalid' },
+    ),
+});
+
+export type UpdateForumDigestDelayFormData = z.infer<typeof updateForumDigestDelaySchema>;

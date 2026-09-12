@@ -25,6 +25,38 @@
     "success": "Passwort erfolgreich geändert.",
     "error": "Fehler beim Ändern des Passworts."
   },
+  "forum": {
+    "title": "Forum-Benachrichtigungen",
+    "description": "E-Mails zu ungelesenen Themen in Foren und Themen, denen du folgst.",
+    "delay": "Wartezeit vor der E-Mail",
+    "delayPlaceholder": "Wartezeit wählen",
+    "delayHint": "Nach dem ersten ungelesenen Beitrag wartet die E-Mail so lange, damit weitere Beiträge in derselben Nachricht landen.",
+    "save": "Wartezeit speichern",
+    "saving": "Wird gespeichert...",
+    "success": "Wartezeit gespeichert.",
+    "error": "Wartezeit konnte nicht gespeichert werden.",
+    "subscriptions": "Abonnements",
+    "boards": "Foren",
+    "threads": "Themen",
+    "threadsHint": "Themen-Abos gelten, wenn du dem Forum nicht folgst.",
+    "mutes": "Ausgeschlossene Themen",
+    "mutesHint": "Ausgeschlossene Themen gelten, wenn du dem Forum folgst.",
+    "empty": "Keine Abonnements.",
+    "remove": "Entfolgen",
+    "removed": "Abonnement entfernt.",
+    "unmute": "Wieder folgen",
+    "unmuted": "Thema wieder eingeschlossen.",
+    "removeError": "Abonnement konnte nicht entfernt werden.",
+    "delayOptions": {
+      "15": "15 Minuten",
+      "30": "30 Minuten",
+      "60": "1 Stunde",
+      "240": "4 Stunden",
+      "720": "12 Stunden",
+      "1440": "1 Tag",
+      "10080": "7 Tage"
+    }
+  },
   "deleteAccount": {
     "title": "Account löschen",
     "description": "Dein Account wird gelöscht und du kannst dich danach nicht mehr anmelden. Deine Kreditinformationen bleiben erhalten.",

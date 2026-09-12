@@ -10,6 +10,7 @@ import {
   setLastProjectCookie,
   userCanAccessProject,
 } from './lib/last-project-cookie';
+import { sanitizeLoginCallbackUrl } from './lib/login-callback-url';
 import { PROJECT_ID_KEY } from './lib/params';
 
 /** Paths that do not require a session (login flow + legal notice). */
@@ -89,12 +90,16 @@ export async function proxy(request: NextRequest) {
     const isGuestOnlyAuthPage = pathMatchesOneOf(authRequest.nextUrl.pathname, GUEST_ONLY_WHEN_AUTHENTICATED_PATHS);
 
     if (!authRequest.auth && !isAnonymousAllowed) {
-      // Redirect to login page if not authenticated and trying to access private page
-      return NextResponse.redirect(new URL('/auth/login', authRequest.nextUrl.origin));
+      const loginUrl = new URL('/auth/login', authRequest.nextUrl.origin);
+      const callback = sanitizeLoginCallbackUrl(`${authRequest.nextUrl.pathname}${authRequest.nextUrl.search}`);
+      if (callback) {
+        loginUrl.searchParams.set('callbackUrl', callback);
+      }
+      return NextResponse.redirect(loginUrl);
     }
     if (authRequest.auth && isGuestOnlyAuthPage) {
-      // Redirect to root if authenticated and trying to access auth pages (not /legal)
-      return NextResponse.redirect(new URL('/', authRequest.nextUrl.origin));
+      const callback = sanitizeLoginCallbackUrl(authRequest.nextUrl.searchParams.get('callbackUrl'));
+      return NextResponse.redirect(new URL(callback ?? '/', authRequest.nextUrl.origin));
     }
   })(request, { params: Promise.resolve({}) });
 

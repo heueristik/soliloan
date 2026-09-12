@@ -12,6 +12,7 @@ import {
   prepareForumPostBody,
 } from '@/lib/help/forum-db';
 import { canDeleteThread, canModerateBoard, canRenameThread, forumUserFromSession } from '@/lib/help/forum-permissions';
+import { armForumDigestAfterPost, followForumThread } from '@/lib/help/forum-subscriptions';
 import { revalidateForumPaths } from '@/lib/help/revalidate-forum';
 import {
   forumBoardIdSchema,
@@ -57,6 +58,15 @@ export const createForumThreadAction = managerAction
         },
       });
       return created;
+    });
+
+    if (parsedInput.watchThread !== false) {
+      await followForumThread(user.id, thread.id);
+    }
+    await armForumDigestAfterPost({
+      threadId: thread.id,
+      boardId: board.id,
+      authorId: user.id,
     });
 
     revalidateForumPaths();

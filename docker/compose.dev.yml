@@ -35,5 +35,8 @@ include:
       - "./docker/app/compose.override.dev.yml"
     project_directory: "."
 
+  - path:
+      - "./docker/forum-digest-cron/compose.base.yml"
+
 networks:
   backend_network:

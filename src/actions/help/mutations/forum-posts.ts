@@ -14,6 +14,7 @@ import {
   refreshThreadActivity,
 } from '@/lib/help/forum-db';
 import { canDeletePost, canEditPost, forumUserFromSession } from '@/lib/help/forum-permissions';
+import { armForumDigestAfterPost, followForumThread } from '@/lib/help/forum-subscriptions';
 import { revalidateForumPaths } from '@/lib/help/revalidate-forum';
 import { forumPostCreateSchema, forumPostUpdateSchema, forumReactionSchema } from '@/lib/schemas/forum';
 import { managerAction } from '@/lib/utils/safe-action';
@@ -60,6 +61,16 @@ export const createForumPostAction = managerAction
         lastPostedAt: new Date(),
         replyCount: { increment: 1 },
       },
+    });
+
+    if (parsedInput.watchThread) {
+      await followForumThread(user.id, thread.id);
+    }
+
+    await armForumDigestAfterPost({
+      threadId: thread.id,
+      boardId: thread.board.id,
+      authorId: user.id,
     });
 
     revalidateForumPaths();

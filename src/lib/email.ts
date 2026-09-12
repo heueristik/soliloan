@@ -1,5 +1,5 @@
 import { render } from '@react-email/render';
-import nodemailer from 'nodemailer';
+import nodemailer, { type SendMailOptions } from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import React from 'react';
 import { db } from '@/lib/db';
@@ -54,12 +54,18 @@ export async function sendEmail(to: string, subject: string, html: React.ReactEl
 /**
  * Send an email using nodemailer with a pre-rendered HTML string.
  */
-export async function sendRawEmail(to: string, subject: string, html: string) {
+export async function sendRawEmail(
+  to: string,
+  subject: string,
+  html: string,
+  extras?: Pick<SendMailOptions, 'headers' | 'list'>,
+) {
   return transporter.sendMail({
     from: process.env.SMTP_FROM,
     to,
     subject,
     html,
+    ...extras,
   });
 }
 

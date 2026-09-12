@@ -34,6 +34,7 @@ export function ForumThreadForm({ boardId, boardSlug, pickerArticles }: ForumThr
     defaultValues: {
       title: '',
       body: EMPTY_FAQ_DOC,
+      watchThread: true,
     },
   });
 
@@ -64,6 +65,8 @@ export function ForumThreadForm({ boardId, boardSlug, pickerArticles }: ForumThr
             title: t('title'),
             titlePlaceholder: t('titlePlaceholder'),
             body: t('body'),
+            watchThread: t('watchThread'),
+            watchThreadHint: t('watchThreadHint'),
           }}
         />
         <FormActions

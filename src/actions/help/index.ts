@@ -14,6 +14,7 @@ export {
   toggleForumReactionAction,
   updateForumPostAction,
 } from './mutations/forum-posts';
+export { toggleForumWatchAction, unsubscribeForumWatchAction } from './mutations/forum-subscriptions';
 export {
   createForumThreadAction,
   deleteForumThreadAction,
@@ -37,4 +38,5 @@ export {
   getForumThreadUnsafe,
   markForumThreadReadUnsafe,
 } from './queries/get-forum';
+export { getForumSubscriptionsUnsafe } from './queries/get-forum-subscriptions';
 export { searchHelpAction } from './queries/search-help';

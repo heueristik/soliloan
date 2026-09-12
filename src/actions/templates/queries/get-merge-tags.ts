@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { db } from '@/lib/db';
 import {
+  BOARD_DIGEST_FIELDS,
   buildLoopTags,
   buildMergeTagValue,
   DATASET_CONFIGS,
@@ -98,6 +99,17 @@ export async function getMergeTagConfigAction(
           label: t(`loanYearly.${field}`),
           value: buildMergeTagValue('loanYearly', field),
           entity: 'loanYearly',
+        });
+      }
+    }
+
+    if (loopKey === 'threads') {
+      for (const field of BOARD_DIGEST_FIELDS) {
+        childFields.push({
+          key: `board.${field}`,
+          label: t(`board.${field}`),
+          value: buildMergeTagValue('board', field),
+          entity: 'board',
         });
       }
     }

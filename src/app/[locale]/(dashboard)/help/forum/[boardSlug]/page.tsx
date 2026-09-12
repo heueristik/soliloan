@@ -4,6 +4,7 @@ import { getForumBoardBySlugUnsafe, getForumBoardHasUnreadUnsafe, getForumThread
 import { ForumShell } from '@/components/help/forum/forum-shell';
 import { ForumThreadList } from '@/components/help/forum/forum-thread-list';
 import { forumUserFromSession } from '@/lib/help/forum-permissions';
+import { isForumBoardSubscribed } from '@/lib/help/forum-subscriptions';
 import { requireManager } from '@/lib/require-session';
 
 type ForumBoardPageProps = {
@@ -22,9 +23,10 @@ export default async function ForumBoardPage({ params, searchParams }: ForumBoar
     notFound();
   }
 
-  const [{ threads, total }, hasUnread] = await Promise.all([
+  const [{ threads, total }, hasUnread, watchingBoard] = await Promise.all([
     getForumThreadsUnsafe(board.id, user.id, { page: Number(page) || 1 }),
     getForumBoardHasUnreadUnsafe(board.id, user.id),
+    isForumBoardSubscribed(user.id, board.id),
   ]);
 
   return (
@@ -34,6 +36,7 @@ export default async function ForumBoardPage({ params, searchParams }: ForumBoar
       newThreadHref={`/help/forum/${board.slug}/new`}
       showMarkRead
       hasUnread={hasUnread}
+      watchingBoard={watchingBoard}
     >
       <ForumThreadList board={board} threads={threads} total={total} />
     </ForumShell>

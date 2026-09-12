@@ -51,6 +51,7 @@ export const forumBoardIdSchema = z.object({
 export const forumThreadFormSchema = z.object({
   title: requiredTitle,
   body: z.unknown().default(EMPTY_FAQ_DOC),
+  watchThread: z.boolean(),
 });
 
 export type ForumThreadFormData = z.infer<typeof forumThreadFormSchema>;
@@ -58,6 +59,7 @@ export type ForumThreadFormData = z.infer<typeof forumThreadFormSchema>;
 export const forumThreadCreateSchema = forumThreadFormSchema.omit({ body: true }).extend({
   boardId: z.string().min(1),
   body: richTextBodyActionSchema,
+  watchThread: z.boolean().optional().default(true),
 });
 
 export const forumThreadRenameSchema = z.object({
@@ -80,6 +82,7 @@ export const forumPostFormSchema = z.object({
   threadId: z.string().min(1),
   body: z.unknown().default(EMPTY_FAQ_DOC),
   parentId: z.string().min(1),
+  watchThread: z.boolean().optional(),
 });
 
 export type ForumPostFormData = z.infer<typeof forumPostFormSchema>;
@@ -97,3 +100,9 @@ export const forumReactionSchema = z.object({
   postId: z.string().min(1),
   emoji: z.enum(FORUM_EMOJIS),
 });
+
+export const forumWatchTargetSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('thread'), id: z.string().min(1) }),
+  z.object({ kind: z.literal('board'), id: z.string().min(1) }),
+  z.object({ kind: z.literal('mute'), id: z.string().min(1) }),
+]);

@@ -13,6 +13,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import type { ForumBoardListItem, ForumManagerOption } from '@/types/forum';
 
 import { ForumBoardDialog } from './forum-board-dialog';
+import { ForumWatchButton } from './forum-watch-button';
 
 type ForumShellProps = {
   isAdmin: boolean;
@@ -24,6 +25,7 @@ type ForumShellProps = {
   showManageBoards?: boolean;
   showMarkRead?: boolean;
   hasUnread?: boolean;
+  watchingBoard?: boolean;
   children: ReactNode;
 };
 
@@ -37,6 +39,7 @@ export function ForumShell({
   showManageBoards = false,
   showMarkRead = false,
   hasUnread = false,
+  watchingBoard = false,
   children,
 }: ForumShellProps) {
   const t = useTranslations('help.forumPage');
@@ -67,6 +70,14 @@ export function ForumShell({
         )}
         <div className="flex flex-wrap items-center gap-2">
           <HelpSearch primary="forum" />
+          {board ? (
+            <ForumWatchButton
+              key={`${board.id}-${watchingBoard}`}
+              kind="board"
+              id={board.id}
+              watching={watchingBoard}
+            />
+          ) : null}
           {showMarkRead && board ? (
             <Button
               type="button"

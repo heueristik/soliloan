@@ -48,7 +48,7 @@ type ForumPostProps = {
   onCloseComposer: () => void;
   onReact: (postId: string, emoji: ForumEmoji) => void;
   onEditPost: (postId: string, body: unknown) => void;
-  onReplyToPost: (parent: ForumPostNode, body: unknown) => void;
+  onReplyToPost: (parent: ForumPostNode, body: unknown, watchThread?: boolean) => void;
   saving?: boolean;
   depth?: number;
 };
@@ -189,7 +189,7 @@ export function ForumPost({
                 pickerArticles={pickerArticles}
                 saving={saving}
                 onCancel={onCloseComposer}
-                onSave={(body) => onReplyToPost(post, body)}
+                onSave={(body, options) => onReplyToPost(post, body, options?.watchThread)}
               />
             </div>
           ) : null}

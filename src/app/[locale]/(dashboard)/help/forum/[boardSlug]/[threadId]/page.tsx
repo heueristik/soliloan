@@ -10,6 +10,7 @@ import {
 import { ForumShell } from '@/components/help/forum/forum-shell';
 import { ForumThreadView } from '@/components/help/forum/forum-thread-view';
 import { forumUserFromSession } from '@/lib/help/forum-permissions';
+import { getForumThreadWatchState } from '@/lib/help/forum-subscriptions';
 import { requireManager } from '@/lib/require-session';
 import { flattenFaqTocArticles } from '@/types/faq';
 
@@ -36,7 +37,11 @@ export default async function ForumThreadPage({ params, searchParams }: ForumThr
 
   await markForumThreadReadUnsafe(thread.id, user.id);
 
-  const [boards, toc] = await Promise.all([getForumBoardOptionsUnsafe(), getFaqTocUnsafe(isAdmin)]);
+  const [boards, toc, watch] = await Promise.all([
+    getForumBoardOptionsUnsafe(),
+    getFaqTocUnsafe(isAdmin),
+    getForumThreadWatchState(user.id, thread.id, board.id),
+  ]);
 
   return (
     <ForumShell
@@ -44,6 +49,7 @@ export default async function ForumThreadPage({ params, searchParams }: ForumThr
       board={{ id: board.id, name: board.name, slug: board.slug }}
       boardCurrent={false}
       newThreadHref={`/help/forum/${board.slug}/new`}
+      watchingBoard={watch.boardWatching}
     >
       <ForumThreadView
         thread={thread}
@@ -51,8 +57,10 @@ export default async function ForumThreadPage({ params, searchParams }: ForumThr
         pickerArticles={flattenFaqTocArticles(toc)}
         currentUser={{
           id: user.id,
-          name: session.user.name?.trim() || session.user.email || '',
+          name: session.user.name?.trim() || '',
         }}
+        watchingThread={watch.watchingThread}
+        watchingBoard={watch.boardWatching}
       />
     </ForumShell>
   );

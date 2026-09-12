@@ -25,7 +25,7 @@ export function FaqTiptapRenderer({ content, className, headings = true }: FaqTi
   });
 
   if (!editor) {
-    return <div className={cn('min-h-[8rem]', className)} />;
+    return <div className={className} />;
   }
 
   return (

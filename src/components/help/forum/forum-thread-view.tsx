@@ -18,15 +18,25 @@ import type { ForumAuthor, ForumBoardListItem, ForumPostNode, ForumThreadRecord 
 
 import { ForumPost } from './forum-post';
 import { ForumThreadActions } from './forum-thread-actions';
+import { ForumWatchButton } from './forum-watch-button';
 
 type ForumThreadViewProps = {
   thread: ForumThreadRecord;
   boards: Pick<ForumBoardListItem, 'id' | 'name'>[];
   pickerArticles: Pick<FaqTocArticle, 'title' | 'slug'>[];
   currentUser: ForumAuthor;
+  watchingThread?: boolean;
+  watchingBoard?: boolean;
 };
 
-export function ForumThreadView({ thread, boards, pickerArticles, currentUser }: ForumThreadViewProps) {
+export function ForumThreadView({
+  thread,
+  boards,
+  pickerArticles,
+  currentUser,
+  watchingThread = false,
+  watchingBoard = false,
+}: ForumThreadViewProps) {
   const t = useTranslations('help.forumPage');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -70,7 +80,7 @@ export function ForumThreadView({ thread, boards, pickerArticles, currentUser }:
     });
   };
 
-  const onReplyToPost = (parent: ForumPostNode, body: unknown) => {
+  const onReplyToPost = (parent: ForumPostNode, body: unknown, watchThread = false) => {
     if (isOptimisticForumPostId(parent.id) || isPending) return;
     setComposer(null);
     const reply = createOptimisticForumPost({
@@ -79,10 +89,7 @@ export function ForumThreadView({ thread, boards, pickerArticles, currentUser }:
       parentId: parent.id,
     });
     const isFirstLevelReply = !parent.parentId;
-    const lastPageAfterReply = Math.max(
-      1,
-      Math.ceil((optimisticThread.firstLevelTotal + 1) / FORUM_PAGE_SIZE),
-    );
+    const lastPageAfterReply = Math.max(1, Math.ceil((optimisticThread.firstLevelTotal + 1) / FORUM_PAGE_SIZE));
     const showOptimisticReply = !isFirstLevelReply || page === lastPageAfterReply;
     startTransition(async () => {
       if (showOptimisticReply) {
@@ -92,6 +99,7 @@ export function ForumThreadView({ thread, boards, pickerArticles, currentUser }:
         threadId: thread.id,
         parentId: parent.id,
         body: serializeRichTextBody(body),
+        watchThread,
       });
       if (result?.serverError) {
         toast.error(result.serverError);
@@ -138,7 +146,16 @@ export function ForumThreadView({ thread, boards, pickerArticles, currentUser }:
             </div>
             <p className="text-sm text-muted-foreground">{t('author', { name: optimisticThread.author.name })}</p>
           </div>
-          <ForumThreadActions thread={optimisticThread} boards={boards} />
+          <div className="flex shrink-0 items-center gap-2">
+            <ForumWatchButton
+              key={`${optimisticThread.id}-${watchingThread}-${watchingBoard}`}
+              kind="thread"
+              id={optimisticThread.id}
+              watching={watchingThread}
+              watchingBoard={watchingBoard}
+            />
+            <ForumThreadActions thread={optimisticThread} boards={boards} />
+          </div>
         </div>
       </div>
 

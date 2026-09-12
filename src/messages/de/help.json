@@ -144,7 +144,19 @@
     "pageNext": "Weiter",
     "pageOf": "Seite {page} von {pages}",
     "lockedHint": "Dieses Thema ist gesperrt. Es können keine neuen Antworten geschrieben werden.",
-    "originalPost": "Eröffnungsbeitrag"
+    "originalPost": "Eröffnungsbeitrag",
+    "watchBoard": "Forum folgen",
+    "unwatchBoard": "Forum entfolgen",
+    "watchThread": "Thema folgen",
+    "unwatchThread": "Thema entfolgen",
+    "muteThread": "Thema ausschließen",
+    "unmuteThread": "Thema wieder einschließen",
+    "watchSettings": "Benachrichtigungseinstellungen",
+    "watchSuccess": "Du bekommst eine E-Mail zu neuen Beiträgen, nach der Wartezeit in den Konto-Einstellungen.",
+    "unwatchSuccess": "Benachrichtigungen für dieses Forum sind aus.",
+    "unwatchThreadSuccess": "Benachrichtigungen für dieses Thema sind aus.",
+    "muteSuccess": "Für dieses Thema gibt es keine E-Mails mehr. Andere Themen im Forum bleiben abonniert.",
+    "unmuteSuccess": "Dieses Thema ist wieder in den Forum-Benachrichtigungen."
   },
   "boardDialog": {
     "title": "Foren verwalten",
@@ -172,11 +184,15 @@
     "titlePlaceholder": "Worum geht es?",
     "body": "Beitrag",
     "created": "Thema erstellt.",
-    "createError": "Thema konnte nicht erstellt werden."
+    "createError": "Thema konnte nicht erstellt werden.",
+    "watchThread": "Thema folgen",
+    "watchThreadHint": "Du bekommst eine E-Mail zu neuen Beiträgen, nach der Wartezeit in den Konto-Einstellungen."
   },
   "postForm": {
     "body": "Beitrag",
     "submit": "Antworten",
-    "save": "Speichern"
+    "save": "Speichern",
+    "watchThread": "Thema folgen",
+    "watchThreadHint": "Du bekommst eine E-Mail zu neuen Beiträgen, nach der Wartezeit in den Konto-Einstellungen."
   }
 }

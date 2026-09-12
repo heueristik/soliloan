@@ -2,6 +2,7 @@
 
 import { useFormContext } from 'react-hook-form';
 
+import { FormCheckbox } from '@/components/form/form-checkbox';
 import { FormField } from '@/components/form/form-field';
 import { FaqRichTextEditor } from '@/components/help/faq/faq-rich-text-editor';
 import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,6 +16,8 @@ type ForumThreadFormFieldsProps = {
     title: string;
     titlePlaceholder: string;
     body: string;
+    watchThread: string;
+    watchThreadHint: string;
   };
 };
 
@@ -42,6 +45,7 @@ export function ForumThreadFormFields({ pickerArticles, labels }: ForumThreadFor
           </FormItem>
         )}
       />
+      <FormCheckbox name="watchThread" label={labels.watchThread} hint={labels.watchThreadHint} />
     </div>
   );
 }

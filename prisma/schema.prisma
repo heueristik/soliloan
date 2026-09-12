@@ -52,6 +52,8 @@ model User {
   lastInvited                 DateTime?
   passwordResetToken          String?
   passwordResetTokenExpiresAt DateTime?
+  forumDigestDelayMinutes     Int                     @default(60)
+  forumDigestDueAt            DateTime?
   accounts                    Account[]
   lenders                     Lender[]
   notes                       Note[]
@@ -70,6 +72,12 @@ model User {
   forumBoardModerators        ForumBoardModerator[]
   forumPostReactions          ForumPostReaction[]
   forumThreadReads            ForumThreadRead[]
+  forumThreadSubscriptions    ForumThreadSubscription[]
+  forumBoardSubscriptions     ForumBoardSubscription[]
+  forumThreadMutes            ForumThreadMute[]
+  forumThreadMailCursors      ForumThreadMailCursor[]
+
+  @@index([forumDigestDueAt])
 }
 
 model HighscoreEntry {
@@ -383,8 +391,9 @@ model ForumBoard {
   position    Int
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
-  threads     ForumThread[]
-  moderators  ForumBoardModerator[]
+  threads       ForumThread[]
+  moderators    ForumBoardModerator[]
+  subscriptions ForumBoardSubscription[]
 }
 
 model ForumBoardModerator {
@@ -410,8 +419,11 @@ model ForumThread {
   updatedAt    DateTime          @updatedAt
   board        ForumBoard        @relation(fields: [boardId], references: [id], onDelete: Cascade)
   author       User              @relation(fields: [authorId], references: [id], onDelete: Restrict)
-  posts        ForumPost[]
-  reads        ForumThreadRead[]
+  posts         ForumPost[]
+  reads         ForumThreadRead[]
+  subscriptions ForumThreadSubscription[]
+  mutes         ForumThreadMute[]
+  mailCursors   ForumThreadMailCursor[]
 
   @@index([boardId, pinned, lastPostedAt])
   @@index([authorId])
@@ -460,6 +472,50 @@ model ForumThreadRead {
 
   @@id([threadId, userId])
   @@index([userId])
+}
+
+model ForumThreadSubscription {
+  userId    String
+  threadId  String
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread    ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@id([userId, threadId])
+  @@index([threadId])
+}
+
+model ForumBoardSubscription {
+  userId    String
+  boardId   String
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board     ForumBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@id([userId, boardId])
+  @@index([boardId])
+}
+
+model ForumThreadMute {
+  userId    String
+  threadId  String
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@id([userId, threadId])
+  @@index([threadId])
+}
+
+model ForumThreadMailCursor {
+  userId         String
+  threadId       String
+  lastNotifiedAt DateTime
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread         ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@id([userId, threadId])
+  @@index([threadId])
 }
 
 enum TemplateType {
