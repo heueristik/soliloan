@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { FORUM_DIGEST_DELAY_MINUTES } from '@/lib/help/forum-constants';
 
-import { selectEnumRequired } from './common';
+import { passwordSchema, selectEnumRequired } from './common';
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2, { message: 'validation.account.nameRequired' }),
@@ -15,7 +15,7 @@ export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, { message: 'validation.common.required' }),
-    newPassword: z.string().min(8, { message: 'validation.account.passwordMinLength' }),
+    newPassword: passwordSchema,
     confirmPassword: z.string().min(1, { message: 'validation.common.required' }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

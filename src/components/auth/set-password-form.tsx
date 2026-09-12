@@ -12,12 +12,13 @@ import { setPassword } from '@/actions/auth';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
+import { passwordSchema } from '@/lib/schemas/common';
 
 // Define the form schema
 const formSchema = z
   .object({
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -32,6 +33,7 @@ interface SetPasswordFormProps {
 
 export function SetPasswordForm({ token }: SetPasswordFormProps) {
   const t = useTranslations('auth');
+  const tRoot = useTranslations();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,7 +55,11 @@ export function SetPasswordForm({ token }: SetPasswordFormProps) {
         toast.success(t('setPassword.success'));
         router.push('/auth/login');
       } else {
-        toast.error(result.error || t('setPassword.error'));
+        toast.error(
+          result.error?.startsWith('validation.') || result.error?.startsWith('error.')
+            ? tRoot(result.error)
+            : result.error || t('setPassword.error'),
+        );
       }
     } catch (error) {
       console.error('Error setting password:', error);
