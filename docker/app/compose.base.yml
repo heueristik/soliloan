@@ -17,7 +17,7 @@ services:
       - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.average=20
       - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.burst=10
       - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.period=1m
-      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.rule=Host(`${TRAEFIK_HOST:?}`) && PathPrefix(`/api/auth`)
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.rule=Host(`${TRAEFIK_HOST:?}`) && (PathPrefix(`/api/auth`) || PathPrefix(`/auth`) || PathPrefix(`/de/auth`))
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.entrypoints=websecure
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.service=${TRAEFIK_ROUTER_NAME:-soliloan}
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.middlewares=${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit

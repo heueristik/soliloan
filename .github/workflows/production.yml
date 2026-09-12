@@ -5,6 +5,7 @@
 #   DOCKERHUB_TOKEN       — Docker Hub access token (or password)
 #   DATABASE_URL          — Postgres URL for the app (and migrations if you run them separately)
 #   NEXTAUTH_SECRET
+#   CRON_SECRET            — Bearer token for POST /api/cron/forum-digest
 #   POSTGRES_PASSWORD     — if this compose stack runs Postgres on the same host
 #   SMTP_PASSWORD         — optional; use empty only if your SMTP relay needs no auth
 #
@@ -89,6 +90,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://soliloan:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/soliloan
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -110,6 +112,7 @@ jobs:
             echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
             echo "DATABASE_URL=${DATABASE_URL}"
             echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
+            echo "CRON_SECRET=${CRON_SECRET}"
             echo "NEXTAUTH_URL=https://${{ vars.SOLILOAN_DOMAIN }}"
             echo "NEXTAUTH_URL_INTERNAL=http://localhost:3000"
             echo "AUTH_TRUST_HOST=true"
@@ -142,6 +145,7 @@ jobs:
           printf '%s\n' \
             'set -euo pipefail' \
             'cd "$(dirname "$0")"' \
+            'read -r DOCKERHUB_TOKEN' \
             'echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin' \
             'docker compose -f compose.yml --env-file .env pull app' \
             'docker compose -f compose.yml --env-file .env up -d postgres' \
@@ -159,6 +163,5 @@ jobs:
           rm -f "${REMOTE_SH}"
 
           USER_Q=$(printf '%q' '${{ vars.DOCKERHUB_USERNAME }}')
-          TOKEN_Q=$(printf '%q' "${DOCKERHUB_TOKEN}")
-          ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" \
-            "DOCKERHUB_USERNAME=${USER_Q} DOCKERHUB_TOKEN=${TOKEN_Q} bash -c $(printf '%q' "cd ${REMOTE_DIR} && bash ./remote-deploy.sh")"
+          printf '%s\n' "${DOCKERHUB_TOKEN}" | ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" \
+            "DOCKERHUB_USERNAME=${USER_Q} bash -c $(printf '%q' "cd ${REMOTE_DIR} && bash ./remote-deploy.sh")"

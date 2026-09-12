@@ -4,8 +4,15 @@
   cursor: text;
 }
 
-.note-tiptap-editor:focus {
+.note-tiptap-editor {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
   outline: none;
+}
+
+.note-tiptap-editor > *:last-child {
+  flex-grow: 1;
 }
 
 .note-tiptap-editor p,
