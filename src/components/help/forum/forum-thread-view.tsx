@@ -119,6 +119,7 @@ export function ForumThreadView({
     locked: optimisticThread.locked,
     pickerArticles,
     composer,
+    alreadyWatching: watchingThread,
     saving: isPending,
     onToggleReply: (postId: string) =>
       setComposer((current) =>

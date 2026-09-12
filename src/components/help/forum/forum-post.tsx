@@ -49,6 +49,7 @@ type ForumPostProps = {
   onReact: (postId: string, emoji: ForumEmoji) => void;
   onEditPost: (postId: string, body: unknown) => void;
   onReplyToPost: (parent: ForumPostNode, body: unknown, watchThread?: boolean) => void;
+  alreadyWatching?: boolean;
   saving?: boolean;
   depth?: number;
 };
@@ -66,6 +67,7 @@ export function ForumPost({
   onReact,
   onEditPost,
   onReplyToPost,
+  alreadyWatching = false,
   saving = false,
   depth = 0,
 }: ForumPostProps) {
@@ -186,6 +188,7 @@ export function ForumPost({
                 mode="reply"
                 threadId={threadId}
                 parentId={post.id}
+                alreadyWatching={alreadyWatching}
                 pickerArticles={pickerArticles}
                 saving={saving}
                 onCancel={onCloseComposer}
@@ -212,6 +215,7 @@ export function ForumPost({
           onReact={onReact}
           onEditPost={onEditPost}
           onReplyToPost={onReplyToPost}
+          alreadyWatching={alreadyWatching}
           depth={depth + 1}
         />
       ))}

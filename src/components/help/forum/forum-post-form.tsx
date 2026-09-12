@@ -21,7 +21,14 @@ type ForumPostFormProps = {
   onSave: (body: unknown, options?: { watchThread?: boolean }) => void;
   saving?: boolean;
 } & (
-  | { mode: 'reply'; threadId: string; parentId: string; initialBody?: never; postId?: never }
+  | {
+      mode: 'reply';
+      threadId: string;
+      parentId: string;
+      alreadyWatching?: boolean;
+      initialBody?: never;
+      postId?: never;
+    }
   | { mode: 'edit'; postId: string; initialBody: unknown; threadId?: never; parentId?: never }
 );
 
@@ -57,7 +64,9 @@ export function ForumPostForm(props: ForumPostFormProps) {
         }}
       >
         <ForumPostFormFields pickerArticles={pickerArticles} label={t('body')} compact={compact} />
-        {isReply ? <FormCheckbox name="watchThread" label={t('watchThread')} hint={t('watchThreadHint')} /> : null}
+        {props.mode === 'reply' && !props.alreadyWatching ? (
+          <FormCheckbox name="watchThread" label={t('watchThread')} hint={t('watchThreadHint')} />
+        ) : null}
         <div className="flex justify-end gap-2">
           {onCancel ? (
             <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={saving}>
