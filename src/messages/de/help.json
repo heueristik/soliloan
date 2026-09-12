@@ -152,7 +152,7 @@
     "muteThread": "Thema ausschließen",
     "unmuteThread": "Thema wieder einschließen",
     "watchSettings": "Benachrichtigungseinstellungen",
-    "watchSuccess": "Du bekommst eine E-Mail zu neuen Beiträgen, nach der Wartezeit in den Konto-Einstellungen.",
+    "watchSuccess": "Du bekommst eine E-Mail zu neuen Beiträgen, mehr dazu in deinen Konto-Einstellungen.",
     "unwatchSuccess": "Benachrichtigungen für dieses Forum sind aus.",
     "unwatchThreadSuccess": "Benachrichtigungen für dieses Thema sind aus.",
     "muteSuccess": "Für dieses Thema gibt es keine E-Mails mehr. Andere Themen im Forum bleiben abonniert.",
@@ -186,13 +186,13 @@
     "created": "Thema erstellt.",
     "createError": "Thema konnte nicht erstellt werden.",
     "watchThread": "Thema folgen",
-    "watchThreadHint": "Du bekommst eine E-Mail zu neuen Beiträgen, nach der Wartezeit in den Konto-Einstellungen."
+    "watchThreadHint": "Du bekommst eine E-Mail zu neuen Beiträgen, mehr dazu in deinen Konto-Einstellungen."
   },
   "postForm": {
     "body": "Beitrag",
     "submit": "Antworten",
     "save": "Speichern",
     "watchThread": "Thema folgen",
-    "watchThreadHint": "Du bekommst eine E-Mail zu neuen Beiträgen, nach der Wartezeit in den Konto-Einstellungen."
+    "watchThreadHint": "Du bekommst eine E-Mail zu neuen Beiträgen, mehr dazu in deinen Konto-Einstellungen."
   }
 }
