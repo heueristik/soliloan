@@ -1,14 +1,17 @@
 'use client';
 
 import { ViewType } from '@prisma/client';
+import { useQuery } from '@tanstack/react-query';
 import {
   Box,
+  CircleHelp,
   FileText,
   FlaskConical,
   HandCoins,
   History,
   LayoutDashboard,
   LogOut,
+  MessagesSquare,
   Receipt,
   Scale,
   Settings,
@@ -20,11 +23,12 @@ import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useQueryState } from 'nuqs';
-
+import { getSidebarViews } from '@/actions/views/queries/get-sidebar-views';
 import { ThemeModeSwitch } from '@/components/theme-mode-switch';
 import { Button } from '@/components/ui/button';
 import { PROJECT_ID_KEY, projectIdParser } from '@/lib/params';
 import { cn } from '@/lib/utils';
+import { SIDEBAR_VIEWS_QUERY_KEY } from '@/lib/views/sidebar-views-query';
 import { useAppStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import type { SidebarNavView } from '@/types/sidebar-nav';
@@ -40,11 +44,17 @@ interface SidebarNavProps {
   sidebarViews: SidebarNavView[];
 }
 
-export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: SidebarNavProps) {
+export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews: initialSidebarViews }: SidebarNavProps) {
   const t = useTranslations('navigation');
   const { toggleSidebar } = useAppStore();
   const isAdmin = session.user.isAdmin;
   const [projectId] = useQueryState(PROJECT_ID_KEY, projectIdParser);
+  const { data: sidebarViews = initialSidebarViews } = useQuery({
+    queryKey: SIDEBAR_VIEWS_QUERY_KEY,
+    queryFn: () => getSidebarViews(),
+    initialData: initialSidebarViews,
+    staleTime: Number.POSITIVE_INFINITY,
+  });
   const currentProject = projects.find((p) => p.id === projectId);
   const showInvestmentTypes = currentProject?.configuration.deInvestmentActCompliance === true;
 
@@ -104,11 +114,20 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
                 <SidebarViewItems views={sidebarViews} viewType={ViewType.TRANSACTION} basePath="/transactions" />
               </div>
               <NavItem href="/logbook" icon={History} label={t('logbook')} />
-              {showInvestmentTypes && <NavItem href="/investment-types" icon={Scale} label={t('investmentTypes')} />}
+              {showInvestmentTypes && (
+                <ProjectTableNavItem basePath="/investment-types" icon={Scale} label={t('investmentTypes')} />
+              )}
               <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
               {process.env.NODE_ENV === 'development' && (
                 <NavItem href="/sandbox" icon={FlaskConical} label={t('sandbox')} />
               )}
+            </div>
+            <div className="space-y-2 border-t pt-4">
+              <span className="text-sm font-medium">{t('help')}</span>
+              <div className="space-y-1 pt-1">
+                <NavItem href="/help/faq" icon={CircleHelp} label={t('faq')} />
+                <NavItem href="/help/forum" icon={MessagesSquare} label={t('forum')} />
+              </div>
             </div>
           </nav>
 

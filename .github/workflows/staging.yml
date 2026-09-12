@@ -74,6 +74,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://soliloan:${{ secrets.STAGING_POSTGRES_PASSWORD }}@postgres:5432/soliloan
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.STAGING_POSTGRES_PASSWORD }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -96,6 +97,7 @@ jobs:
             echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
             echo "DATABASE_URL=${DATABASE_URL}"
             echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
+            echo "CRON_SECRET=${CRON_SECRET}"
             echo "NEXTAUTH_URL=https://${{ env.STAGING_DOMAIN }}"
             echo "NEXTAUTH_URL_INTERNAL=http://localhost:3000"
             echo "AUTH_TRUST_HOST=true"

@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { generateEmailHtml, getNodesMapFromDesign } from '@/lib/templates/email-generator';
+import { generateEmailHtml } from '@/lib/templates/email-generator';
 import { processTemplate } from '@/lib/templates/template-processor';
 
 /**
@@ -30,6 +30,25 @@ export async function resolveSystemTemplate(systemKey: string, projectId?: strin
   return projectRow ?? rows[0] ?? null;
 }
 
+/** Global system email only (`projectId` null). Forum digest has no project. */
+export async function resolveGlobalSystemTemplate(systemKey: string) {
+  return db.communicationTemplate.findFirst({
+    where: {
+      systemKey,
+      isSystem: true,
+      type: 'EMAIL',
+      projectId: null,
+    },
+    select: {
+      id: true,
+      designJson: true,
+      dataset: true,
+      projectId: true,
+      subjectOrFilename: true,
+    },
+  });
+}
+
 /**
  * Render a system email template to final HTML with all merge tags replaced.
  * Returns null if the template has no usable design or produces empty output.
@@ -41,10 +60,9 @@ export function renderSystemEmailTemplate(
     logoUrl?: string | null;
   },
 ): string | null {
-  const nodes = getNodesMapFromDesign(designJson as Record<string, unknown>);
-  if (!nodes || Object.keys(nodes).length === 0) return null;
+  if (designJson == null) return null;
 
-  const rawHtml = generateEmailHtml(nodes, options);
+  const rawHtml = generateEmailHtml(designJson, options);
   if (!rawHtml || rawHtml.trim().length === 0) return null;
 
   // biome-ignore lint/suspicious/noExplicitAny: processTemplate uses Record<string, any>

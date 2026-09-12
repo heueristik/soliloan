@@ -114,7 +114,7 @@ export const addFileAction = lenderAction
 
     // Revalidate paths
     if (loanId) {
-      revalidatePath('/lenders');
+      revalidatePath('/lenders/list');
     }
     revalidatePath(`/lenders/${lenderId}`);
 

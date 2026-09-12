@@ -4,6 +4,7 @@ import { createTranslator } from 'next-intl';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { sampleForumDigestMergeData } from '@/lib/help/forum-digest-data';
 import { resolveSavingsFirstDepositDate, resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
 import {
   lenderFilesRelation,
@@ -764,12 +765,12 @@ export async function getTemplateData(
   }
 
   if (dataset === 'USER') {
-    if (!recordId) return null;
-
-    const user = await db.user.findUnique({
-      where: { id: recordId },
-      select: { name: true, email: true },
-    });
+    const user = recordId
+      ? await db.user.findUnique({
+          where: { id: recordId },
+          select: { name: true, email: true },
+        })
+      : { name: 'Anna Beispiel', email: 'anna@example.com' };
     if (!user) return null;
 
     return withSystemMergeData({
@@ -779,6 +780,7 @@ export async function getTemplateData(
         name: user.name ?? '',
         email: user.email ?? '',
       },
+      ...sampleForumDigestMergeData(locale),
     });
   }
 
