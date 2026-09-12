@@ -6,11 +6,11 @@ import { createAuditEntry, getManagerContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import { getInviteValidDays } from '@/lib/env';
 import { type ProjectManagerInviteContext, sendProjectManagerInvitationEmail } from '@/lib/email';
+import { loadProject } from '@/lib/projects/get-project';
 import { generateToken } from '@/lib/token';
 import { normalizeStoredEmail } from '@/lib/utils/email';
 import { hashPassword } from '@/lib/utils/password';
 import { projectAction } from '@/lib/utils/safe-action';
-import { getProjectUnsafe } from '../queries/get-project';
 
 export const addProjectManagerAction = projectAction
   .inputSchema(
@@ -119,6 +119,6 @@ export const addProjectManagerAction = projectAction
       managerContext,
     );
 
-    const updated = await getProjectUnsafe(projectId);
+    const updated = await loadProject(projectId);
     return { project: updated };
   });

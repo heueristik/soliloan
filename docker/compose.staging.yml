@@ -15,6 +15,9 @@ include:
       - "./docker/app/compose.override.staging.yml"
     project_directory: "."
 
+  - path:
+      - "./docker/forum-digest-cron/compose.base.yml"
+
 networks:
   traefik_network:
     external: true

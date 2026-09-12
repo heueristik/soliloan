@@ -90,6 +90,14 @@ export const NOTE_FIELDS = ['text', 'createdAt', 'createdAtLong', 'createdByName
 // User fields from Prisma schema
 export const USER_FIELDS = ['name', 'email'] as const;
 
+export const DIGEST_FIELDS = ['threadCount', 'hasMoreThreads', 'manageUrl'] as const;
+
+export const THREAD_DIGEST_FIELDS = ['title', 'url', 'unreadCount'] as const;
+
+export const BOARD_DIGEST_FIELDS = ['name', 'slug', 'url'] as const;
+
+export const MORE_THREAD_FIELDS = ['url'] as const;
+
 // Latest transaction fields (top-level on LOAN dataset)
 export const LATEST_TRANSACTION_FIELDS = ['type', 'amount', 'date', 'dateLong', 'paymentType'] as const;
 
@@ -232,6 +240,16 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   // User
   'user.name': 'string',
   'user.email': 'string',
+  'digest.threadCount': 'number',
+  'digest.hasMoreThreads': 'boolean',
+  'digest.manageUrl': 'string',
+  'thread.title': 'string',
+  'thread.url': 'string',
+  'thread.unreadCount': 'number',
+  'board.name': 'string',
+  'board.slug': 'string',
+  'board.url': 'string',
+  'moreThread.url': 'string',
   // Latest Transaction (top-level on LOAN dataset)
   'latestTransaction.type': 'enum',
   'latestTransaction.amount': 'currency',
@@ -330,6 +348,18 @@ export const LOOP_DEFINITIONS: Record<string, LoopDefinition> = {
     availableFields: LENDER_FIELDS,
     childLoops: ['loans'],
   },
+  threads: {
+    key: 'threads',
+    labelKey: 'loops.threads',
+    childPrefix: 'thread',
+    availableFields: THREAD_DIGEST_FIELDS,
+  },
+  moreThreads: {
+    key: 'moreThreads',
+    labelKey: 'loops.moreThreads',
+    childPrefix: 'moreThread',
+    availableFields: MORE_THREAD_FIELDS,
+  },
 };
 
 // Dataset configurations
@@ -342,10 +372,11 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
   USER: {
     topLevelFields: [
       { entity: 'user', fields: USER_FIELDS },
+      { entity: 'digest', fields: DIGEST_FIELDS },
       { entity: 'platform', fields: PLATFORM_FIELDS },
       { entity: 'misc', fields: MISC_FIELDS },
     ],
-    loops: [],
+    loops: ['threads', 'moreThreads'],
   },
   LENDER: {
     topLevelFields: [
