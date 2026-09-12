@@ -14,6 +14,7 @@ import {
 import { db } from '@/lib/db';
 import { fileSchema } from '@/lib/schemas/file';
 import { createThumbnail, MAX_UPLOAD_BYTES } from '@/lib/utils/file';
+import { sniffMimeType, UNKNOWN_FILE_MIME } from '@/lib/utils/mime';
 import { lenderAction } from '@/lib/utils/safe-action';
 
 export const addFileAction = lenderAction
@@ -21,12 +22,11 @@ export const addFileAction = lenderAction
     z.object({
       lenderId: z.string(),
       loanId: z.string().optional(),
-      data: fileSchema, // Fixed import
+      data: fileSchema,
       base64Data: z.string(),
-      mimeType: z.string(),
     }),
   )
-  .action(async ({ parsedInput: { lenderId, loanId, data, base64Data, mimeType }, ctx }) => {
+  .action(async ({ parsedInput: { lenderId, loanId, data, base64Data }, ctx }) => {
     // Fetch lender to ensure existence and get context
     // Casting to LenderWithRelations or verifying fields
     const lender = await db.lender.findUnique({
@@ -53,7 +53,8 @@ export const addFileAction = lenderAction
       throw new Error('error.file.tooLarge');
     }
 
-    const thumbnailData = await createThumbnail(binaryData);
+    const mimeType = sniffMimeType(binaryData) ?? UNKNOWN_FILE_MIME;
+    const thumbnailData = await createThumbnail(binaryData, mimeType);
 
     // Create the file
     const file = await db.file.create({

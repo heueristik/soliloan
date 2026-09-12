@@ -58,7 +58,6 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange }: File
         loanId: data.loanId ?? undefined,
         data,
         base64Data,
-        mimeType: file.type,
       });
 
       if (result?.serverError || result?.validationErrors) {
